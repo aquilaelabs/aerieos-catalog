@@ -14,8 +14,21 @@ commit and the sha256 of its archive at that commit, never latest.
   refused by every install.
 - `tools/catalog-sign.py`: `keygen`, `sign` and `verify`. The private half
   is a maintainer's own and is never in this repository.
-- `packs/`: community manifests under review, one folder per submission,
-  before an entry pins them in the index.
+- `packs/official/NAME` and `packs/agents/NAME`: every toolchain and
+  coding agent BuilderBot ships, as a pack in bbtool.json's format, written
+  by BuilderBot's `tools/packs-export.py --catalog` from its own tables so
+  the two cannot drift; each has an entry in the index at tier `official`,
+  pinned to this repository's commit with its folder as `path` and the
+  sha256 of `git archive --format=tar COMMIT PATH`. An install lists them
+  on its Library as the shipped rows they are, and the index says which
+  commit of the catalog vetted them.
+- `packs/`: community manifests under review too, one folder per
+  submission, before an entry pins them in the index.
+
+An entry may name a `path`: the folder of its repository the pack lives
+in, for a repository that holds several. Its sha256 is then of that
+folder's archive at the commit, and an install keeps the folder's files
+and nothing else.
 
 ## Submitting a pack
 
