@@ -22,6 +22,12 @@ commit and the sha256 of its archive at that commit, never latest.
   sha256 of `git archive --format=tar COMMIT PATH`. An install lists them
   on its Library as the shipped rows they are, and the index says which
   commit of the catalog vetted them.
+- `packs/apps/NAME`: a Docker app, `bbapp.json` (name, label, about, port,
+  media, platforms, license) with its `compose.yml` beside it, every image
+  pinned to a tag and `${PORT}`, `${DATA}`, `${MEDIA}`, `${PUID}`,
+  `${PGID}` and `${TZ}` the only blanks, which New container fills on the
+  node picked; its index entry carries `"kind": "app"`. `packs/apps/whoami`
+  (traefik/whoami, MIT) is the one to prove a deploy with.
 - `packs/`: community manifests under review too, one folder per
   submission, before an entry pins them in the index.
 

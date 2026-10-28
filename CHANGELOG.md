@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A Docker app in the catalog, whoami (traefik/whoami, MIT) under packs/apps/whoami, an index entry of kind app naming its folder (R170 step 7)
 - The shipped toolchains and coding agents as packs under packs/official and packs/agents, each pinned in the index at tier official with its folder as path (R170 step 6)
 
 ### Added
