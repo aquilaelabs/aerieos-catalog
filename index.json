@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-10-28T14:34:34Z",
+ "generated": "2026-10-28T15:33:55Z",
  "packs": [
   {
    "name": "jdk",
@@ -455,6 +455,21 @@
    "about": "OpenCode, run by sessions as opencode",
    "platforms": [
     "linux/*"
+   ]
+  },
+  {
+   "name": "whoami",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/builderbot-catalog",
+   "commit": "b6c3f7d2937729684704d8537200c8e33a8592f9",
+   "path": "packs/apps/whoami",
+   "sha256": "e529be44d42ed3254a9e1176ac3f1f1d9ec4daf041df806952a32d49d8d2e511",
+   "tier": "vetted",
+   "withdrawn": false,
+   "about": "A tiny web server that answers with the hostname, the address and the headers of the request: the simplest container to prove a deploy with.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
    ]
   }
  ]
