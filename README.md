@@ -40,8 +40,15 @@ and nothing else.
 
 Open a pull request that adds an entry to `index.json`: the pack's
 repository, the commit to pin, and the sha256 of `git archive --format=tar
-COMMIT | sha256sum` at that commit. The vetting CI installs the pack on
-every vetted system and runs BuilderBot's scanners over it; a maintainer
+COMMIT | sha256sum` at that commit. The vetting check
+(`.github/workflows/check.yml`, `tools/catalog-check.py`) fetches each entry
+the pull request changes at its pin, checks the commit and the sha256, and
+holds its manifest to BuilderBot's own validators, so it passes exactly when
+an install would take it. Run it before opening the request with
+`tools/catalog-check.py --builderbot PATH-TO-BUILDERBOT --changed-from
+origin/main`. A push to main checks every entry and the signature. Installing
+the pack on every vetted system and running BuilderBot's scanners over it
+come next; a maintainer
 reviews it, marks it vetted, signs the index and merges. A pack found
 wanting later is marked `withdrawn: true` in the next signed index, and
 every install that holds it says so on its bell.

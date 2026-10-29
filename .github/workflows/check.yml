@@ -1,0 +1,32 @@
+# The vetting check (R169 step 3): a pull request's changed entries fetched
+# at their pins and held to BuilderBot's own validators; a push to main
+# checks every entry and the maintainers' signature over the index.
+name: check
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  index:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: aquilaelabs/builderbot
+          ref: ${{ vars.BUILDERBOT_REF || 'main' }}
+          path: .builderbot
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install cryptography
+      - name: the entries a pull request changes
+        if: github.event_name == 'pull_request'
+        run: python3 tools/catalog-check.py --builderbot .builderbot --changed-from "origin/${{ github.base_ref }}"
+      - name: every entry, and the signature
+        if: github.event_name == 'push'
+        run: python3 tools/catalog-check.py --builderbot .builderbot --signed
