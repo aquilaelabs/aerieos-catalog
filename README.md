@@ -17,6 +17,9 @@ commit and the sha256 of its archive at that commit, never latest.
   in the repository's secret `CATALOG_SIGNING_KEY`, and the `sign` workflow,
   run by hand on the branch that holds a changed index, checks every entry,
   signs the index with it and commits `index.sig` to that branch.
+  `catalog.pub` may name a spare key on a second line: its private half is
+  kept apart from that secret, an install reads an index signed by either,
+  and so the first key can be lost or replaced with no install cut off.
 - `packs/official/NAME` and `packs/agents/NAME`: every toolchain and
   coding agent BuilderBot ships, as a pack in bbtool.json's format, written
   by BuilderBot's `tools/packs-export.py --catalog` from its own tables so

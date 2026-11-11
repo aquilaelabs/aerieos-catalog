@@ -48,13 +48,16 @@ def _priv(path):
     return ed25519.Ed25519PrivateKey.from_private_bytes(bytes.fromhex(words[1]))
 
 
-def _pub(path):
+def _pubs(path):
+    """The public keys a file names: the key the index is signed with, and
+    on a second line its spare, whose private half is kept apart from the
+    repository's secret so the first can be replaced with no install cut off."""
     serialization, ed25519 = _ed()
     with open(path, encoding="utf-8") as f:
-        words = f.read().split()
-    if len(words) != 2 or words[0] != "builderbot-catalog-ed25519":
+        lines = [ln.split() for ln in f if ln.strip() and not ln.lstrip().startswith("#")]
+    if not 1 <= len(lines) <= 2 or any(len(w) != 2 or w[0] != "builderbot-catalog-ed25519" for w in lines):
         sys.exit("not a catalog public key file")
-    return ed25519.Ed25519PublicKey.from_public_bytes(bytes.fromhex(words[1]))
+    return [ed25519.Ed25519PublicKey.from_public_bytes(bytes.fromhex(w[1])) for w in lines]
 
 
 def check_index(d):
@@ -104,11 +107,14 @@ def verify(pubfile):
         words = f.read().split()
     if len(words) != 2 or words[0] != "builderbot-catalog-ed25519-signature":
         sys.exit("index.sig is not a catalog signature")
-    try:
-        _pub(pubfile).verify(bytes.fromhex(words[1]), data)
-    except Exception:                                                  # noqa: BLE001 (any failure is one answer)
-        sys.exit("index.sig does not match index.json under that key: refused")
-    print("index.json is signed by that key")
+    for n, key in enumerate(_pubs(pubfile)):
+        try:
+            key.verify(bytes.fromhex(words[1]), data)
+        except Exception:                                              # noqa: BLE001 (any failure is one answer)
+            continue
+        print("index.json is signed by that key" if n == 0 else "index.json is signed by that file's spare key")
+        return
+    sys.exit("index.sig does not match index.json under that key: refused")
 
 
 def main(argv):
