@@ -27,8 +27,10 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 INDEX = os.path.join(ROOT, "index.json")
-SELF = "https://github.com/aquilaelabs/builderbot-catalog"
-OWN = ("packs/official/", "packs/agents/")
+# This repository, by its name and by the one it had before: an entry
+# pinned under either is this repository's own.
+SELF = ("https://github.com/aquilaelabs/aerieos-catalog", "https://github.com/aquilaelabs/builderbot-catalog")
+OWN = ("packs/official/", "packs/agents/", "packs/services/")
 
 
 def _load(path, name):
@@ -60,10 +62,10 @@ def check_entry(p, toolpacks, nasapps):
     url = p["url"]
     # This repository's own entries are read from the checkout CI made,
     # with its whole history, rather than fetched back from GitHub.
-    if url.rstrip("/") == SELF:
+    if url.rstrip("/") in SELF:
         url = "file://" + ROOT
-    if p["tier"] == "official" and not (p["url"].rstrip("/") == SELF and path.startswith(OWN)):
-        return [f"{name}: an official entry is one of BuilderBot's own, in this repository's packs/official or packs/agents"]
+    if p["tier"] == "official" and not (p["url"].rstrip("/") in SELF and path.startswith(OWN)):
+        return [f"{name}: an official entry is one of this repository's own, in its packs/official, packs/agents or packs/services"]
     if p.get("kind") == "app":
         got = toolpacks.fetch_folder(url, p["commit"], p["sha256"], path, ("bbapp.json", "compose.yml"))
         if got.get("error"):
