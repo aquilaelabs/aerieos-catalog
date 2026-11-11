@@ -24,9 +24,10 @@ commit and the sha256 of its archive at that commit, never latest.
   commit of the catalog vetted them. A coding agent's pack also says how
   it is installed (`agent.install`: the vendor's installer, how a version
   is pinned, where the program lands, and a `rev` that moves with each
-  change): an install uses the recipe pinned here when its `rev` is higher
-  than the one its release shipped, so a vendor's changed installer is
-  answered by a commit and a signature here, with no new release.
+  change), and its index entry repeats that `rev` as `install_rev`: an
+  install uses the recipe pinned here when that is higher than the one its
+  release shipped, so a vendor's changed installer is answered by a commit
+  and a signature here, with no new release.
 - `packs/apps/NAME`: a Docker app, `bbapp.json` (name, label, about, port,
   media, platforms, license) with its `compose.yml` beside it, every image
   pinned to a tag and `${PORT}`, `${DATA}`, `${MEDIA}`, `${PUID}`,
