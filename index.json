@@ -3,7 +3,7 @@
   "2": "0.9.0"
  },
  "version": 1,
- "generated": "2026-11-11T22:51:11Z",
+ "generated": "2026-11-11T23:30:54Z",
  "packs": [
   {
    "name": "jdk",
@@ -487,7 +487,7 @@
    "commit": "b6c3f7d2937729684704d8537200c8e33a8592f9",
    "path": "packs/apps/whoami",
    "sha256": "e529be44d42ed3254a9e1176ac3f1f1d9ec4daf041df806952a32d49d8d2e511",
-   "tier": "vetted",
+   "tier": "aerie",
    "withdrawn": false,
    "about": "A tiny web server that answers with the hostname, the address and the headers of the request: the simplest container to prove a deploy with.",
    "platforms": [
@@ -499,17 +499,18 @@
    "name": "gemini",
    "agent": true,
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "37804074aaa900c60d9a170a6366c49d27de6f4f",
-   "path": "packs/vetted/gemini",
-   "sha256": "0ba555315ae8f3220236e5187f95c21598070dfca5a071a4997bfe4f0a504647",
-   "tier": "vetted",
+   "commit": "dfd293f678d9b200126d1c4836c3712c7aab00f9",
+   "path": "packs/aerie/gemini",
+   "sha256": "e6929f7a053dc28f5c08896eab167e20feecd2813663280191c5bdb0726bbfb0",
+   "tier": "aerie",
    "withdrawn": false,
    "about": "Gemini: Google's coding agent, Antigravity CLI (agy), as a session's agent, handed the briefing and held by the same guards through its own hooks. Signs in with a Google account in its own terminal.",
    "platforms": [
     "linux/amd64",
     "linux/arm64"
    ],
-   "format": 2
+   "format": 2,
+   "label": "Gemini"
   }
  ]
 }

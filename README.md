@@ -43,6 +43,23 @@ commit and the sha256 of its archive at that commit, never latest.
 - `packs/`: community manifests under review too, one folder per
   submission, before an entry pins them in the index.
 
+## Who stands behind an entry
+
+Each entry says its `tier`, and an install's Library shows it in a person's
+words:
+
+| On the card | `tier` | What it is |
+|---|---|---|
+| Built by Aerie | `official` | One of the toolchains, coding agents and services AerieOS ships, as a pack (`packs/official`, `packs/agents`, `packs/services`). |
+| Built by Aerie | `aerie` | A pack AerieOS's maintainers wrote, for somebody else's tool or an app; it lives in this repository (`packs/aerie`, `packs/apps`). |
+| Verified | `verified` | A vendor's own pack, in a repository of a vendor `verified-vendors.json` lists: a shorter list than vetted, since the maintainers have checked who the vendor is. |
+| Vetted | `vetted` | Anybody's pack, reviewed by the maintainers. |
+
+`verified-vendors.json` is `{"vendors": [{"name": "...", "repositories":
+["https://github.com/ORG/"]}]}`: an entry is verified only when its
+address is under one of a listed vendor's. An AerieOS from before `aerie`
+and `verified` reads both as vetted.
+
 ## The format, and what it promises
 
 A manifest is written in AerieOS's pack format, which has a number and only
