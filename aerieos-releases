@@ -1,0 +1,7 @@
+# The AerieOS releases the catalog still supports, one tag a line, oldest
+# first. Every entry is held to each of these that reads its pack format
+# (tools/catalog-check.py): the oldest install that takes an entry must take
+# it as the newest does. A new release is added here when it is out; one no
+# longer supported is taken off, and with it the promise to its installs.
+v0.9.0-dev.5173
+v0.9.0-dev.5236

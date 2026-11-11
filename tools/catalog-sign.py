@@ -82,6 +82,19 @@ def check_index(d):
             bad.append(f"{where}.tier is vetted or official")
         if not isinstance(p.get("withdrawn", False), bool):
             bad.append(f"{where}.withdrawn is true or false")
+        fmt = p.get("format", 1)
+        if isinstance(fmt, bool) or not isinstance(fmt, int) or fmt < 1:
+            bad.append(f"{where}.format is the pack format its manifest is written in, a whole number from 1")
+    # The first AerieOS that reads each format past the first, for a card
+    # on an older one to name.
+    since = d.get("formats", {})
+    if not isinstance(since, dict) or not all(re.fullmatch(r"[0-9]{1,4}", str(k)) and re.fullmatch(r"[0-9A-Za-z.+-]{1,40}", str(v))
+                                              for k, v in since.items()):
+        bad.append("formats maps a pack format's number to the first AerieOS that reads it, e.g. {\"2\": \"0.9.0\"}")
+    else:
+        for i, p in enumerate(d["packs"]):
+            if isinstance(p, dict) and isinstance(p.get("format"), int) and p["format"] > 1 and str(p["format"]) not in since:
+                bad.append(f"packs[{i}] is pack format {p['format']}, and formats does not say which AerieOS first reads it")
     names = [p.get("name") for p in d["packs"] if isinstance(p, dict)]
     if len(names) != len(set(names)):
         bad.append("a name appears twice")

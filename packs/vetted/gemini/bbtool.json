@@ -152,6 +152,7 @@
    "session_key": "conversationId"
   }
  },
+ "format": 2,
  "install": {
   "steps": [
    [

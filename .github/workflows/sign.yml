@@ -6,18 +6,19 @@
 # committed to the branch it ran on. main is never written here: a maintainer
 # merges the branch once it is signed.
 #
-# aerieos_ref names the AerieOS branch or tag whose validators the entries
-# are held to, for an index that pins a pack the newest release's format
-# does not know yet: signed on a branch, an install that runs that AerieOS
-# can be pointed at the branch to try it. main's own check still holds
-# every entry to AerieOS's main, so such an index is merged only once main
-# takes the pack too.
+# Every entry is held to each AerieOS release still supported
+# (aerieos-releases). aerieos_ref names one more branch or tag to hold them
+# to, for an index that pins an entry written in a pack format no release
+# reads yet: signed on a branch, an install running that AerieOS can be
+# pointed at the branch to try it. main's own check names the releases
+# alone, so such an index is merged once a release that reads the format is
+# out and listed.
 name: sign
 on:
   workflow_dispatch:
     inputs:
       aerieos_ref:
-        description: The AerieOS branch or tag to check the entries against (its main when left empty)
+        description: One more AerieOS branch or tag to hold the entries to, beside the releases listed
         required: false
         default: ""
 permissions:
@@ -34,17 +35,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/checkout@v4
-        with:
-          repository: aquilaelabs/aerieos
-          ref: ${{ inputs.aerieos_ref || vars.BUILDERBOT_REF || 'main' }}
-          path: .aerieos
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install cryptography
-      - name: Every entry, as an install would take it
-        run: python3 tools/catalog-check.py --builderbot .aerieos
+      - name: Every entry, as each AerieOS release still supported would take it
+        env:
+          AERIEOS_REF: ${{ inputs.aerieos_ref }}
+        run: |
+          set -euo pipefail
+          mapfile -t releases < <(tools/aerieos-checkouts.sh "${AERIEOS_REF}")
+          python3 tools/catalog-check.py "${releases[@]}"
       - name: Sign the index
         env:
           CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
