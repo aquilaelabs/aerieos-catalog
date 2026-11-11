@@ -13,6 +13,89 @@
    "how": "flag"
   },
   "hooks": {
+   "answers": {
+    "pre": {
+     "approve": {
+      "decision": "auto_approve"
+     },
+     "pass": {
+      "decision": "allow"
+     },
+     "refuse": {
+      "decision": "deny",
+      "reason": "{reason}"
+     },
+     "say": {
+      "decision": "allow",
+      "reason": "{text}"
+     }
+    },
+    "prompt": {
+     "refuse": {
+      "injectSteps": [
+       {
+        "errorMessage": {
+         "userMessage": "{reason}"
+        }
+       }
+      ],
+      "terminationBehavior": "terminate"
+     },
+     "say": {
+      "injectSteps": [
+       {
+        "systemMessage": {
+         "systemMessage": "{text}"
+        }
+       }
+      ]
+     }
+    },
+    "start": {
+     "say": {
+      "injectSteps": [
+       {
+        "systemMessage": {
+         "systemMessage": "{text}"
+        }
+       }
+      ]
+     }
+    },
+    "stop": {
+     "pass": {
+      "decision": "allow"
+     },
+     "refuse": {
+      "decision": "continue",
+      "reason": "{reason}"
+     }
+    }
+   },
+   "document": {
+    "entries": {
+     "pre": [
+      {
+       "hooks": [
+        "{handler}"
+       ],
+       "matcher": "*"
+      }
+     ]
+    },
+    "entry": [
+     "{handler}"
+    ],
+    "handler": {
+     "command": "{command}",
+     "timeout": "{seconds}",
+     "type": "command"
+    },
+    "keep": true,
+    "under": [
+     "aerieos"
+    ]
+   },
    "events": {
     "pre": "PreToolUse",
     "prompt": "PreInvocation",
@@ -20,9 +103,24 @@
     "stop": "Stop"
    },
    "file": ".gemini/config/hooks.json",
-   "payload": "nested",
+   "payload": {
+    "args": {
+     "command": "CommandLine",
+     "file": "TargetFile",
+     "pattern": "Query"
+    },
+    "call": "invocationNum",
+    "cwd": [
+     "cwd",
+     "toolCall.args.Cwd"
+    ],
+    "input": "toolCall.args",
+    "prompt": "lastUserInput",
+    "session": "conversationId",
+    "tool": "toolCall.name",
+    "transcript": "transcriptPath"
+   },
    "prompt_fires": "each-call",
-   "shape": "named",
    "tools": {
     "edit": [
      "write_to_file",
