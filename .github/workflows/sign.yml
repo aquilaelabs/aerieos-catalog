@@ -43,7 +43,13 @@ jobs:
             exit 1
           fi
           key="${RUNNER_TEMP}/catalog.key"
-          ( umask 077; printf '%s\n' "${CATALOG_SIGNING_KEY}" > "${key}" )
+          # The secret is the key file's one line, or the hex alone, which is
+          # what is left when only the second word was pasted.
+          case "${CATALOG_SIGNING_KEY}" in
+            builderbot-catalog-ed25519-private*) line="${CATALOG_SIGNING_KEY}" ;;
+            *) line="builderbot-catalog-ed25519-private $(printf '%s' "${CATALOG_SIGNING_KEY}" | tr -d '[:space:]')" ;;
+          esac
+          ( umask 077; printf '%s\n' "${line}" > "${key}" )
           python3 tools/catalog-sign.py sign "${key}"
           rm -f "${key}"
           # The secret is the key this repository names, or nothing is kept.
