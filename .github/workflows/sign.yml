@@ -1,0 +1,64 @@
+# The index signed by the maintainers' key, which lives only in this
+# repository's secret CATALOG_SIGNING_KEY: run by hand on the branch that
+# holds a changed index.json. Every entry is fetched at its pin and held to
+# AerieOS's own validators first, the signature is checked against the
+# public half this repository carries (catalog.pub), and index.sig is
+# committed to the branch it ran on. main is never written here: a maintainer
+# merges the branch once it is signed.
+name: sign
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  index:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Not on main
+        if: github.ref_name == 'main'
+        run: |
+          echo "run this on the branch that holds the changed index, then merge it: main only ever takes a signed index"
+          exit 1
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: aquilaelabs/aerieos
+          ref: ${{ vars.BUILDERBOT_REF || 'main' }}
+          path: .aerieos
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install cryptography
+      - name: Every entry, as an install would take it
+        run: python3 tools/catalog-check.py --builderbot .aerieos
+      - name: Sign the index
+        env:
+          CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CATALOG_SIGNING_KEY}" ]; then
+            echo "this repository has no secret CATALOG_SIGNING_KEY: nothing is signed"
+            exit 1
+          fi
+          key="${RUNNER_TEMP}/catalog.key"
+          ( umask 077; printf '%s\n' "${CATALOG_SIGNING_KEY}" > "${key}" )
+          python3 tools/catalog-sign.py sign "${key}"
+          rm -f "${key}"
+          # The secret is the key this repository names, or nothing is kept.
+          python3 tools/catalog-sign.py verify catalog.pub
+      - name: Commit the signature to this branch
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- index.sig; then
+            echo "index.sig is already this index's signature"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.sig
+          git commit -m "The index signed by the maintainers' key (the sign workflow, run ${GITHUB_RUN_ID})"
+          git push origin "HEAD:${BRANCH}"

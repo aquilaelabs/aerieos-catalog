@@ -13,7 +13,10 @@ commit and the sha256 of its archive at that commit, never latest.
   (its `config/catalog.pub`), so an index tampered with on the way is
   refused by every install.
 - `tools/catalog-sign.py`: `keygen`, `sign` and `verify`. The private half
-  is a maintainer's own and is never in this repository.
+  is a maintainer's own and is never in this repository's files: it is kept
+  in the repository's secret `CATALOG_SIGNING_KEY`, and the `sign` workflow,
+  run by hand on the branch that holds a changed index, checks every entry,
+  signs the index with it and commits `index.sig` to that branch.
 - `packs/official/NAME` and `packs/agents/NAME`: every toolchain and
   coding agent BuilderBot ships, as a pack in bbtool.json's format, written
   by BuilderBot's `tools/packs-export.py --catalog` from its own tables so
