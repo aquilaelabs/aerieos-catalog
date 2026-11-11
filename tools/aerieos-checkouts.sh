@@ -22,6 +22,6 @@ done
 for ref in "${refs[@]}"; do
     [[ "$ref" =~ ^[A-Za-z0-9._/-]{1,100}$ ]] || { echo "not a branch or a tag: $ref" >&2; exit 1; }
     dir="$here/.aerieos/${ref//\//-}"
-    [ -d "$dir" ] || git clone --quiet --depth 1 --branch "$ref" "$repo" "$dir"
+    [ -d "$dir" ] || git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$ref" "$repo" "$dir"
     printf -- '--builderbot\n%s=%s\n' "$ref" "$dir"
 done
