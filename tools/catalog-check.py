@@ -65,6 +65,22 @@ def changed(packs, ref):
     return [p for p in packs if before.get(p.get("name")) != _key(p)]
 
 
+def vendor_of(url):
+    """The verified vendor whose repositories this address is among, or ""."""
+    try:
+        with open(os.path.join(ROOT, "verified-vendors.json"), encoding="utf-8") as f:
+            vendors = json.load(f).get("vendors") or []
+    except (OSError, ValueError, AttributeError):
+        return ""
+    for v in vendors:
+        for under in v.get("repositories") or [] if isinstance(v, dict) else []:
+            # A whole address down to a slash, so one vendor's name is
+            # never the start of another's.
+            if isinstance(under, str) and under.startswith("https://") and under.endswith("/") and (url.rstrip("/") + "/").startswith(under):
+                return str(v.get("name") or under)
+    return ""
+
+
 def _format(doc):
     """The pack format a manifest or an entry says: a whole number from 1,
     1 when it says none, None when what it says is no number."""
@@ -84,6 +100,16 @@ def check_entry(p, toolpacks, nasapps, reads=1):
         url = "file://" + ROOT
     if p["tier"] == "official" and not (p["url"].rstrip("/") in SELF and path.startswith(OWN)):
         return [f"{name}: an official entry is one of this repository's own, in its packs/official, packs/agents or packs/services"]
+    # Built by Aerie is this repository's own too: what its maintainers
+    # wrote is kept here, never pointed at somewhere else.
+    if p["tier"] == "aerie" and not (p["url"].rstrip("/") in SELF and path.startswith("packs/")):
+        return [f"{name}: an aerie entry (Built by Aerie) is a pack this repository holds, under its packs/"]
+    # Verified is a vendor's own pack, from a vendor verified-vendors.json
+    # lists with the addresses its repositories are under.
+    if p["tier"] == "verified":
+        who = vendor_of(p["url"])
+        if not who:
+            return [f"{name}: a verified entry is in a repository of a vendor verified-vendors.json lists; {p['url']} is under none of them"]
     if p.get("kind") == "app":
         got = toolpacks.fetch_folder(url, p["commit"], p["sha256"], path, ("bbapp.json", "compose.yml"))
         if got.get("error"):
@@ -122,6 +148,9 @@ def check_entry(p, toolpacks, nasapps, reads=1):
         bad.append(f"{name}: the entry is {p['tier']} and its manifest {m.get('tier') or 'url'}")
     # The format the manifest says is the entry's: a checkout that knows
     # the number keeps it on what it validated.
+    # Its label, where the entry says one, is its manifest's.
+    if p.get("label") and m.get("label") and p["label"].strip() != m["label"]:
+        bad.append(f"{name}: the entry calls it {p['label']!r} and its manifest {m['label']!r}")
     if "format" in m and m["format"] != _format(p):
         bad.append(f"{name}: the entry says pack format {p.get('format', 1)} and its manifest {m['format']}")
     return bad

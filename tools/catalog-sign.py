@@ -78,8 +78,10 @@ def check_index(d):
             bad.append(f"{where}.commit is the full 40-character hash, never a branch or a tag")
         if not re.fullmatch(r"[0-9a-f]{64}", str(p.get("sha256") or "")):
             bad.append(f"{where}.sha256 is the archive's sha256 at that commit")
-        if p.get("tier") not in ("vetted", "official"):
-            bad.append(f"{where}.tier is vetted or official")
+        if p.get("tier") not in ("official", "aerie", "verified", "vetted"):
+            bad.append(f"{where}.tier is official (a row AerieOS ships), aerie (a pack its maintainers wrote), verified (a verified vendor's own) or vetted")
+        if "label" in p and not (isinstance(p["label"], str) and 0 < len(p["label"].strip()) <= 60):
+            bad.append(f"{where}.label is the pack's name as a person reads it, at most 60 characters")
         if not isinstance(p.get("withdrawn", False), bool):
             bad.append(f"{where}.withdrawn is true or false")
         fmt = p.get("format", 1)
