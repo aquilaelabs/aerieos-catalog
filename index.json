@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-11-11T22:14:11Z",
+ "generated": "2026-11-11T22:29:17Z",
  "packs": [
   {
    "name": "jdk",
@@ -496,9 +496,9 @@
    "name": "gemini",
    "agent": true,
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "7a72583a3297e1dcd3ad4921efcca13efebb976c",
+   "commit": "f6d73d2ba012175d874e20cc6b257e49ef0190d9",
    "path": "packs/vetted/gemini",
-   "sha256": "728de428f40f9d45d313863b97add09bca5170a88fbdc170c7ad706bf9c18ff1",
+   "sha256": "15a545539aed85f381ce52e056628b8ef9030828bd2d7874006d84240e6944e9",
    "tier": "vetted",
    "withdrawn": false,
    "about": "Gemini: Google's coding agent, Antigravity CLI (agy), as a session's agent, handed the briefing and held by the same guards through its own hooks. Signs in with a Google account in its own terminal.",
