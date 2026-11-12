@@ -4,12 +4,18 @@
 #
 # A shallow checkout of AerieOS at every release aerieos-releases lists, and
 # at each REF named beside them (a branch that reads a pack format no
-# release does yet), under .aerieos/. Prints the words catalog-check.py
-# takes for them, one a line: --builderbot, then NAME=DIR.
+# release does yet). Prints the words catalog-check.py takes for them, one
+# a line: --builderbot, then NAME=DIR.
+#
+# The checkouts are kept outside this tree, under the account's cache
+# (AERIEOS_CHECKOUTS names another place): thousands of files that are not
+# the catalog's, which a tree that is synced or watched should not carry.
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")/.." && pwd)"
 repo="${AERIEOS_REPO:-https://github.com/aquilaelabs/aerieos}"
+keep="${AERIEOS_CHECKOUTS:-${XDG_CACHE_HOME:-$HOME/.cache}/aerieos-catalog/checkouts}"
+mkdir -p "$keep"
 
 refs=()
 while read -r ref _; do
@@ -21,7 +27,7 @@ done
 
 for ref in "${refs[@]}"; do
     [[ "$ref" =~ ^[A-Za-z0-9._/-]{1,100}$ ]] || { echo "not a branch or a tag: $ref" >&2; exit 1; }
-    dir="$here/.aerieos/${ref//\//-}"
+    dir="$keep/${ref//\//-}"
     [ -d "$dir" ] || git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$ref" "$repo" "$dir"
     printf -- '--builderbot\n%s=%s\n' "$ref" "$dir"
 done
