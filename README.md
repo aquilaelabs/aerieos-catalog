@@ -107,6 +107,13 @@ newest does; an entry no listed release reads is refused, since nobody
 could install it. Adding something written in a format installs already
 read needs no release of AerieOS: it is a signed commit here.
 
+An entry whose manifest says the AerieOS release lines it works with
+(`works_with`, e.g. `["0.9", "0.10"]`) repeats the list, and the check holds
+the two equal: an install on another line does not show the entry at all,
+and one that upgrades past the lines a kept pack names switches that pack
+off until a pin that names the new line is kept. A manifest that names none
+works with every line, and its entry says nothing.
+
 An entry may name a `path`: the folder of its repository the pack lives
 in, for a repository that holds several. Its sha256 is then of that
 folder's archive at the commit, and an install keeps the folder's files

@@ -170,6 +170,10 @@ def check_entry(p, toolpacks, nasapps, reads=1):
         bad.append(f"{name}: the entry says framework {p.get('framework') or str(_format(p)) + '.0'} and its manifest {m['framework']}")
     if m.get("maker") and m["maker"] != p.get("maker"):
         bad.append(f"{name}: the entry says it is by {p.get('maker')!r} and its manifest {m['maker']!r}")
+    # The AerieOS release lines it works with are the entry's too: an
+    # install on another line reads the entry alone, and leaves its card out.
+    if sorted(m.get("works_with") or []) != sorted(p.get("works_with") or []):
+        bad.append(f"{name}: the entry says it works with {p.get('works_with') or 'every AerieOS'} and its manifest {m.get('works_with') or 'every AerieOS'}")
     return bad
 
 
