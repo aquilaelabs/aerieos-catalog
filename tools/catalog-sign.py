@@ -78,10 +78,25 @@ def check_index(d):
             bad.append(f"{where}.commit is the full 40-character hash, never a branch or a tag")
         if not re.fullmatch(r"[0-9a-f]{64}", str(p.get("sha256") or "")):
             bad.append(f"{where}.sha256 is the archive's sha256 at that commit")
-        if p.get("tier") not in ("vetted", "official"):
-            bad.append(f"{where}.tier is vetted or official")
+        if p.get("tier") not in ("official", "aerie", "verified", "vetted"):
+            bad.append(f"{where}.tier is official (a row AerieOS ships), aerie (a pack its maintainers wrote), verified (a verified vendor's own) or vetted")
+        if "label" in p and not (isinstance(p["label"], str) and 0 < len(p["label"].strip()) <= 60):
+            bad.append(f"{where}.label is the pack's name as a person reads it, at most 60 characters")
         if not isinstance(p.get("withdrawn", False), bool):
             bad.append(f"{where}.withdrawn is true or false")
+        fmt = p.get("format", 1)
+        if isinstance(fmt, bool) or not isinstance(fmt, int) or fmt < 1:
+            bad.append(f"{where}.format is the pack format its manifest is written in, a whole number from 1")
+    # The first AerieOS that reads each format past the first, for a card
+    # on an older one to name.
+    since = d.get("formats", {})
+    if not isinstance(since, dict) or not all(re.fullmatch(r"[0-9]{1,4}", str(k)) and re.fullmatch(r"[0-9A-Za-z.+-]{1,40}", str(v))
+                                              for k, v in since.items()):
+        bad.append("formats maps a pack format's number to the first AerieOS that reads it, e.g. {\"2\": \"0.9.0\"}")
+    else:
+        for i, p in enumerate(d["packs"]):
+            if isinstance(p, dict) and isinstance(p.get("format"), int) and p["format"] > 1 and str(p["format"]) not in since:
+                bad.append(f"packs[{i}] is pack format {p['format']}, and formats does not say which AerieOS first reads it")
     names = [p.get("name") for p in d["packs"] if isinstance(p, dict)]
     if len(names) != len(set(names)):
         bad.append("a name appears twice")

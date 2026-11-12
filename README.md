@@ -43,6 +43,41 @@ commit and the sha256 of its archive at that commit, never latest.
 - `packs/`: community manifests under review too, one folder per
   submission, before an entry pins them in the index.
 
+## Who stands behind an entry
+
+Each entry says its `tier`, and an install's Library shows it in a person's
+words:
+
+| On the card | `tier` | What it is |
+|---|---|---|
+| Built by Aerie | `official` | One of the toolchains, coding agents and services AerieOS ships, as a pack (`packs/official`, `packs/agents`, `packs/services`). |
+| Built by Aerie | `aerie` | A pack AerieOS's maintainers wrote, for somebody else's tool or an app; it lives in this repository (`packs/aerie`, `packs/apps`). |
+| Verified | `verified` | A vendor's own pack, in a repository of a vendor `verified-vendors.json` lists: a shorter list than vetted, since the maintainers have checked who the vendor is. |
+| Vetted | `vetted` | Anybody's pack, reviewed by the maintainers. |
+
+`verified-vendors.json` is `{"vendors": [{"name": "...", "repositories":
+["https://github.com/ORG/"]}]}`: an entry is verified only when its
+address is under one of a listed vendor's. An AerieOS from before `aerie`
+and `verified` reads both as vetted.
+
+## The format, and what it promises
+
+A manifest is written in AerieOS's pack format, which has a number and only
+grows: a manifest valid at one number is valid at every later one, so
+nothing here is rewritten because something was added beside it. A manifest
+says the number it needs (`format`, 1 when it says none), its entry repeats
+it, and the index's `formats` says which AerieOS first reads each number
+past the first. An install too old for an entry lists its card with what it
+needs and fetches nothing. AerieOS's `docs/tool-packs.md` says what each
+number added.
+
+`aerieos-releases` lists the AerieOS releases the catalog still supports.
+The check holds every entry to each of them that reads its format, so an
+entry is signed only when the oldest install that takes it does so as the
+newest does; an entry no listed release reads is refused, since nobody
+could install it. Adding something written in a format installs already
+read needs no release of AerieOS: it is a signed commit here.
+
 An entry may name a `path`: the folder of its repository the pack lives
 in, for a repository that holds several. Its sha256 is then of that
 folder's archive at the commit, and an install keeps the folder's files
@@ -57,8 +92,9 @@ COMMIT | sha256sum` at that commit. The vetting check
 the pull request changes at its pin, checks the commit and the sha256, and
 holds its manifest to BuilderBot's own validators, so it passes exactly when
 an install would take it. Run it before opening the request with
-`tools/catalog-check.py --builderbot PATH-TO-BUILDERBOT --changed-from
-origin/main`. A push to main checks every entry and the signature. Installing
+`tools/aerieos-checkouts.sh` and `tools/catalog-check.py --builderbot
+NAME=DIR ... --changed-from origin/main`, one `--builderbot` for each
+release the first prints. A push to main checks every entry and the signature. Installing
 the pack on every vetted system and running BuilderBot's scanners over it
 come next; a maintainer
 reviews it, marks it vetted, signs the index and merges. A pack found
