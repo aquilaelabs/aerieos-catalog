@@ -156,6 +156,7 @@
     ],
     "kept": ".gemini/antigravity-cli/antigravity-oauth-token",
     "prompt": "paste the authorization code",
+    "refused": "Got an error",
     "url": "https://accounts.google.com/o/oauth2/"
    },
    "login": [
