@@ -1,5 +1,5 @@
 {
- "about": "Google's coding agent, Antigravity CLI (agy), as a session's agent beside the ones AerieOS ships: handed the briefing and held by the same guards through its own hooks. It signs in with a Google account in its own terminal, or runs on a Gemini API key.",
+ "about": "Google's coding agent, Antigravity CLI (agy), as a session's agent beside the ones AerieOS ships: handed the briefing and held by the same guards through its own hooks. It signs in with a Google account, from its page or in its own terminal, or runs on a Gemini API key.",
  "agent": {
   "allow": {
    "how": "hook"
@@ -147,6 +147,17 @@
    "--continue"
   ],
   "signin": {
+   "flow": {
+    "answers": [
+     {
+      "send": "",
+      "when": "Select login method"
+     }
+    ],
+    "kept": ".gemini/antigravity-cli/antigravity-oauth-token",
+    "prompt": "paste the authorization code",
+    "url": "https://accounts.google.com/o/oauth2/"
+   },
    "login": [
     "agy"
    ]

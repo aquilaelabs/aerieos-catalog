@@ -22,11 +22,17 @@ an AerieOS whose pack format takes a hook protocol described in the manifest.
   tool, on a prompt and at the stop. It has no hook after a summary and
   none for its permission prompt, so the house rules are not said again
   after one and its dot is never asking.
-- **Signing in** is its own: the first session shows its link in the
-  terminal, you open it, sign in to Google and paste the code back. The
-  Agents page has no card for it. A `GEMINI_API_KEY` in the session's
-  environment, with `"modelProvider": "gemini"` in
-  `~/.gemini/antigravity-cli/settings.json`, runs it on a key instead.
+- **Signing in** is with a Google account. The pack says how its sign-in
+  goes (the menu it opens on, how Google's link starts, where the code is
+  pasted, the file the sign-in is kept in), so an AerieOS that reads that
+  runs it from Gemini's page on the Installed page: Sign in shows the link
+  and a field for the code, which a phone can use. On an earlier AerieOS,
+  and always if you prefer, the first session shows the link in its
+  terminal and the code is pasted back there. The sign-in is kept in
+  `~/.gemini/antigravity-cli/antigravity-oauth-token` in your home on that
+  node. A `GEMINI_API_KEY` in the session's environment, with
+  `"modelProvider": "gemini"` in `~/.gemini/antigravity-cli/settings.json`,
+  runs it on a key instead.
 
 The adapter was written from Antigravity CLI 1.5.6's documentation, its
 install script and its release notes, and its tests hold it to the
