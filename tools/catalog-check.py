@@ -138,6 +138,11 @@ def check_entry(p, toolpacks, nasapps, reads=1):
             bad.append(f"{name}: bbapp.json names no license")
         if _format(meta) != _format(p):
             bad.append(f"{name}: the entry says pack format {p.get('format', 1)} and its bbapp.json {meta.get('format', 1)}")
+        # The framework's version and the maker an entry says are its manifest's.
+        if (meta.get("framework") or "") != (p.get("framework") or ""):
+            bad.append(f"{name}: the entry says framework {p.get('framework') or '(none)'} and its bbapp.json {meta.get('framework') or '(none)'}")
+        if meta.get("maker") != p.get("maker"):
+            bad.append(f"{name}: the entry says it is by {p.get('maker')!r} and its bbapp.json {meta.get('maker')!r}")
         return bad
     got = toolpacks.fetch(url, p["commit"], (), p["sha256"], path)
     if got.get("error"):
@@ -158,6 +163,13 @@ def check_entry(p, toolpacks, nasapps, reads=1):
         bad.append(f"{name}: the entry calls it {p['label']!r} and its manifest {m['label']!r}")
     if "format" in m and m["format"] != _format(p):
         bad.append(f"{name}: the entry says pack format {p.get('format', 1)} and its manifest {m['format']}")
+    # ...and so are the framework's version it is written for and who its
+    # tool is by, where the checkout reads them (one from before the
+    # framework's second number keeps neither, and is not asked).
+    if "framework" in m and m["framework"] != (p.get("framework") or f"{_format(p)}.0"):
+        bad.append(f"{name}: the entry says framework {p.get('framework') or str(_format(p)) + '.0'} and its manifest {m['framework']}")
+    if m.get("maker") and m["maker"] != p.get("maker"):
+        bad.append(f"{name}: the entry says it is by {p.get('maker')!r} and its manifest {m['maker']!r}")
     return bad
 
 

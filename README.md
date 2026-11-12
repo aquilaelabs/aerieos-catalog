@@ -70,6 +70,18 @@ toolchain) and lists each under `credits`, `[{"name", "maker"}]`, in its
 manifest, which its Details page reads out. The check refuses an entry
 that names no maker.
 
+## The framework's version
+
+The framework a manifest is written in has a version of its own, apart
+from AerieOS's, and it moves whenever the framework changes: two numbers,
+`X.Y`. X is the pack format, which moves when an older AerieOS could not
+run an entry at all (it hides the entry and says what it needs). Y moves
+when something is added that an older AerieOS simply leaves out. A
+manifest says both, `"format": 2` and `"framework": "2.1"`, its index entry
+repeats them, and the check holds what a manifest uses to the version it
+says. AerieOS's docs/tool-packs.md lists what each version added and what
+an AerieOS from before it does with such an entry.
+
 ## The format, and what it promises
 
 A manifest is written in AerieOS's pack format, which has a number and only
