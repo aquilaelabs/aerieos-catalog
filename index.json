@@ -499,12 +499,12 @@
    "name": "gemini",
    "agent": true,
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "f33955d91a9376b7b53427255b7c6e048e205661",
+   "commit": "06ab22fd213ad7a3cf8c1ac08aa5495a7fcee1bc",
    "path": "packs/aerie/gemini",
-   "sha256": "155b2cc5f8d9c7fda7ab08f9488c75eaff6a2cf74e617dd31a913d18de47736f",
+   "sha256": "13fcad9166ac311e0350a1dbfac65dad3fc271836ff9691b9c60c39779bc1f8e",
    "tier": "aerie",
    "withdrawn": false,
-   "about": "Gemini: Google's coding agent, Antigravity CLI (agy), as a session's agent, handed the briefing and held by the same guards through its own hooks. Signs in with a Google account in its own terminal.",
+   "about": "Gemini: Google's coding agent, Antigravity CLI (agy), as a session's agent, handed the briefing and held by the same guards through its own hooks. Signs in with a Google account, from its page or in its own terminal.",
    "platforms": [
     "linux/amd64",
     "linux/arm64"
