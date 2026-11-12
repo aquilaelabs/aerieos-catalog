@@ -84,6 +84,9 @@ def check_index(d):
             bad.append(f"{where}.label is the pack's name as a person reads it, at most 60 characters")
         if not isinstance(p.get("withdrawn", False), bool):
             bad.append(f"{where}.withdrawn is true or false")
+        ww = p.get("works_with")
+        if ww is not None and not (isinstance(ww, list) and 0 < len(ww) <= 12 and all(isinstance(x, str) and re.fullmatch(r"\d{1,3}\.\d{1,3}", x) for x in ww)):
+            bad.append(f"{where}.works_with is the AerieOS release lines its manifest says it works with, e.g. [\"0.9\", \"0.10\"], left out when it names none")
         fmt = p.get("format", 1)
         if isinstance(fmt, bool) or not isinstance(fmt, int) or fmt < 1:
             bad.append(f"{where}.format is the pack format its manifest is written in, a whole number from 1")
