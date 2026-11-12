@@ -584,7 +584,10 @@
    "format": 2,
    "label": "Gemini",
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "works_with": [
+    "0.9"
+   ]
   }
  ]
 }
