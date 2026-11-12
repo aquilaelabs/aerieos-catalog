@@ -98,12 +98,17 @@ def check_entry(p, toolpacks, nasapps, reads=1):
     # with its whole history, rather than fetched back from GitHub.
     if url.rstrip("/") in SELF:
         url = "file://" + ROOT
+    # Who the tool is by, on every entry: its card names them beside the
+    # tier, which says only who packaged it.
+    maker = p.get("maker")
+    if not (isinstance(maker, str) and maker.strip() and len(maker) <= 60 and maker.isprintable() and maker == " ".join(maker.split())):
+        return [f"{name}: an entry names who its tool is by, an organization or a person, in maker (one line of up to 60 characters)"]
     if p["tier"] == "official" and not (p["url"].rstrip("/") in SELF and path.startswith(OWN)):
         return [f"{name}: an official entry is one of this repository's own, in its packs/official, packs/agents or packs/services"]
-    # Built by Aerie is this repository's own too: what its maintainers
+    # Packaged by Aerie is this repository's own too: what its maintainers
     # wrote is kept here, never pointed at somewhere else.
     if p["tier"] == "aerie" and not (p["url"].rstrip("/") in SELF and path.startswith("packs/")):
-        return [f"{name}: an aerie entry (Built by Aerie) is a pack this repository holds, under its packs/"]
+        return [f"{name}: an aerie entry (Packaged by Aerie) is a pack this repository holds, under its packs/"]
     # Verified is a vendor's own pack, from a vendor verified-vendors.json
     # lists with the addresses its repositories are under.
     if p["tier"] == "verified":
