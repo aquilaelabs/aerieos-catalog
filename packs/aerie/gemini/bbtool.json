@@ -106,7 +106,10 @@
    "payload": {
     "args": {
      "command": "CommandLine",
-     "file": "TargetFile",
+     "file": [
+      "TargetFile",
+      "Path"
+     ],
      "pattern": "Query"
     },
     "call": "invocationNum",
@@ -125,7 +128,9 @@
     "edit": [
      "write_to_file",
      "replace_file_content",
-     "multi_replace_file_content"
+     "multi_replace_file_content",
+     "write_file",
+     "edit_file"
     ],
     "grep": [
      "grep_search"
