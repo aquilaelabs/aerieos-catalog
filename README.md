@@ -50,8 +50,8 @@ words:
 
 | On the card | `tier` | What it is |
 |---|---|---|
-| Built by Aerie | `official` | One of the toolchains, coding agents and services AerieOS ships, as a pack (`packs/official`, `packs/agents`, `packs/services`). |
-| Built by Aerie | `aerie` | A pack AerieOS's maintainers wrote, for somebody else's tool or an app; it lives in this repository (`packs/aerie`, `packs/apps`). |
+| Packaged by Aerie | `official` | One of the toolchains, coding agents and services AerieOS ships, as a pack (`packs/official`, `packs/agents`, `packs/services`). |
+| Packaged by Aerie | `aerie` | A pack AerieOS's maintainers wrote, for somebody else's tool or an app; it lives in this repository (`packs/aerie`, `packs/apps`). |
 | Verified | `verified` | A vendor's own pack, in a repository of a vendor `verified-vendors.json` lists: a shorter list than vetted, since the maintainers have checked who the vendor is. |
 | Vetted | `vetted` | Anybody's pack, reviewed by the maintainers. |
 
@@ -59,6 +59,16 @@ words:
 ["https://github.com/ORG/"]}]}`: an entry is verified only when its
 address is under one of a listed vendor's. An AerieOS from before `aerie`
 and `verified` reads both as vetted.
+
+The tier says who stands behind the pack, never who made the tool: a pack
+Packaged by Aerie is usually for somebody else's program. So every entry
+also names who its tool is by in `maker`, an organization or a person
+(`"maker": "Google"`), in its manifest and again in its index entry, and a
+card shows it to the left of the tier. A pack that puts several makers'
+tools together is by whoever put it together (AerieOS, for a shipped
+toolchain) and lists each under `credits`, `[{"name", "maker"}]`, in its
+manifest, which its Details page reads out. The check refuses an entry
+that names no maker.
 
 ## The format, and what it promises
 

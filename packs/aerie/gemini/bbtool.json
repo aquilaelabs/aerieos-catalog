@@ -189,6 +189,7 @@
   ],
   "tool": "bin/agy"
  },
+ "maker": "Google",
  "name": "gemini",
  "platforms": [
   "linux/amd64",
