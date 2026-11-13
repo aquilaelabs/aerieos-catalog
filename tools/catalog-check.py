@@ -2,7 +2,7 @@
 """The vetting check (R169 step 3): what CI runs on every pull request and
 every push, before a maintainer reviews an entry and signs the index.
 
-    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--signed]
+    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside] [--run-installs] [--signed]
 
 DIR is a checkout of AerieOS, whose own fetch and validators are the ones
 used, so an entry passes here exactly when an install would take it. Named
@@ -26,6 +26,26 @@ index.sig against catalog.pub, which is what a push to main must carry.
 An entry says the pack format its manifest is written in (`format`, 1 when
 it says none), and the two agree: that number is how an install knows,
 before it fetches anything, whether the entry is one it reads.
+
+Whose an entry is. An entry at tier official or aerie is this repository's
+own; any other is a third party's, its owner the account its repository is
+under. --changed-from REF (and --whose-from REF, which fetches nothing less)
+says whose each entry is that differs from the index at REF, and refuses a
+change that crosses owners: Aerie's own entries and a third party's in one
+change, two owners' entries in one change, a third party's entry removed
+(one found wanting is withdrawn), handed to another owner, or changed with
+no new pin beyond the two things that are the maintainers' to say
+(withdrawn and tier), and anything else of this repository changed beside a
+third party's entry. --outside says the change comes from outside
+this repository (a pull request from a fork): it adds its entry, or moves
+its own, and never moves one of Aerie's or changes a file that was here.
+
+--run-installs installs each third party's pack that differs, the way a
+node would, with no network beyond the downloads its manifest declares
+(install.fetch, each held to its sha256; offline-install.py): a pack whose
+install reaches for anything it did not declare fails here. So work on Aerie's own packs, by a person, a session
+or tools/packs-export.py, can never carry a third party's entry along, and
+a submission can never reach past its own.
 """
 import argparse
 import importlib.util
@@ -35,7 +55,10 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
+# The catalog this checks: the one this file is in, or CATALOG_ROOT's, which
+# is how a pull request is held to the copy of this file main has (the
+# check workflow), so that it cannot loosen the rule it is held to.
+ROOT = os.environ.get("CATALOG_ROOT") or os.path.dirname(HERE)
 INDEX = os.path.join(ROOT, "index.json")
 # This repository, by its name and by the one it had before: an entry
 # pinned under either is this repository's own.
@@ -51,18 +74,154 @@ def _load(path, name):
     return mod
 
 
-def _key(p):
-    return tuple(str(p.get(k) or "") for k in ("url", "commit", "sha256", "path", "kind"))
+def index_at(ref):
+    """The index as `ref` has it, {} where it has none."""
+    r = subprocess.run(["git", "-C", ROOT, "show", f"{ref}:index.json"], capture_output=True, text=True, check=False)
+    try:
+        d = json.loads(r.stdout) if r.returncode == 0 else {}
+    except ValueError:
+        d = {}
+    return d if isinstance(d, dict) else {}
 
 
 def changed(packs, ref):
-    """The entries that differ from the index at `ref`, by what they pin."""
-    r = subprocess.run(["git", "-C", ROOT, "show", f"{ref}:index.json"], capture_output=True, text=True, check=False)
+    """The entries that differ from the index at `ref` in anything they
+    say: a maker or a tier changed alone is held to its manifest too."""
+    before = {p.get("name"): p for p in index_at(ref).get("packs", []) if isinstance(p, dict)}
+    return [p for p in packs if before.get(p.get("name")) != p]
+
+
+# ---- whose an entry is ------------------------------------------------------
+# What never changes on a third party's entry, and what changes with no new
+# pin: the two things that are the maintainers' to say about it.
+LOCKED = ("url", "kind")
+MAINTAINERS = ("withdrawn", "tier")
+# What a change that moves a third party's entry may change beside the
+# index: the signature the maintainers' workflow commits to its branch.
+BESIDE = ("index.json", "index.sig")
+
+
+def owner_of(p):
+    """Whose an entry is: "" for this repository's own (official, aerie),
+    else the account its repository is under (https://host/account/), or
+    its folder for a submission kept in this repository."""
+    if p.get("tier") in ("official", "aerie"):
+        return ""
+    url = str(p.get("url") or "").rstrip("/")
+    if url in SELF:
+        return "this repository's " + (str(p.get("path") or "").strip("/") or "packs")
+    parts = url.split("/")
+    return "/".join(parts[:4]) + "/" if len(parts) >= 4 else url
+
+
+def whose(before, after, files=(), outside=False, added=()):
+    """(lines, problems): whose each entry is that differs between two
+    indexes, and every way the change crosses owners. `files` is what else
+    the change touches in this repository, `added` those of them that are
+    new; `outside` says the change comes from outside this repository (a
+    pull request from a fork), which never moves what was here."""
+    was = {p.get("name"): p for p in before.get("packs", []) if isinstance(p, dict)}
+    now = {p.get("name"): p for p in after.get("packs", []) if isinstance(p, dict)}
+    lines, bad, ours, theirs, folders = [], [], [], {}, []
+    for name in sorted(set(was) | set(now), key=str):
+        a, b = was.get(name), now.get(name)
+        if a == b:
+            continue
+        who = owner_of(b if b is not None else a)
+        if a is not None and b is not None and owner_of(a) != who:
+            bad.append(f"{name} changes hands, from {owner_of(a) or 'Aerie'} to {who or 'Aerie'}: an entry stays its owner's")
+            who = owner_of(a) or who
+        (theirs.setdefault(who, []) if who else ours).append(name)
+        if b is None:
+            lines.append(f"whose {name}: {who or 'Aerie'}'s, removed")
+            if who:
+                bad.append(f"{name} is removed: a third party's entry found wanting is withdrawn (withdrawn: true), never removed")
+            continue
+        if who and str(b.get("url") or "").rstrip("/") in SELF:
+            folders.append(str(b.get("path") or "").strip("/") + "/")
+        if a is None:
+            lines.append(f"whose {name}: {who or 'Aerie'}'s, added at {str(b.get('commit'))[:12]}")
+            continue
+        fields = sorted(k for k in set(a) | set(b) if a.get(k) != b.get(k))
+        moved = "commit" in fields
+        lines.append(f"whose {name}: {who or 'Aerie'}'s, " + (f"pin moved {str(a.get('commit'))[:12]} to {str(b.get('commit'))[:12]}" if moved else "no new pin")
+                     + f", changes {', '.join(fields)}")
+        if not who:
+            continue
+        locked = [k for k in fields if k in LOCKED]
+        if locked:
+            bad.append(f"{name}: a third party's entry never changes its {' or its '.join(locked)}: a pack that moved is a new entry, and the old one is withdrawn")
+        loose = [k for k in fields if k not in MAINTAINERS and k not in LOCKED]
+        if loose and not moved:
+            bad.append(f"{name}: {', '.join(loose)} changed with no new pin: what a third party's entry says changes only with the commit it pins "
+                       "(withdrawn and tier are the maintainers' to change)")
+    if outside:
+        for name in ours:
+            if name in was:
+                bad.append(f"{name} is Aerie's own: a change from outside this repository never moves it")
+            else:
+                bad.append(f"{name} is added at tier {now[name].get('tier')}: a submission is added as vetted, and the maintainers say the rest")
+        # ...but its own pack's folder, new or moved with its entry.
+        held = sorted(f for f in files if f != "index.json" and not (f in added and f.startswith("packs/"))
+                      and not any(f.startswith(d) for d in folders if d != "/"))
+        if held:
+            bad.append(f"{', '.join(held[:8])}{'...' if len(held) > 8 else ''}: a change from outside this repository adds its entry to index.json, "
+                       "and its pack's own new folder under packs/ where it is kept here, and changes nothing that was here (index.sig is the maintainers')")
+    if ours and theirs:
+        bad.append(f"this change moves Aerie's own entries ({', '.join(ours[:6])}{'...' if len(ours) > 6 else ''}) and a third party's "
+                   f"({', '.join(n for v in theirs.values() for n in v)}): one or the other, never both")
+    if len(theirs) > 1:
+        bad.append("this change moves entries of more than one owner (" + "; ".join(f"{k}: {', '.join(v)}" for k, v in sorted(theirs.items()))
+                   + "): one owner's entries to a change")
+    if theirs:
+        for k in ("version", "formats"):
+            if before.get(k) != after.get(k):
+                bad.append(f"the index's {k} changed beside a third party's entry: that is this repository's own, in a change of its own")
+        beside = sorted(f for f in files if f not in BESIDE and not any(f.startswith(d) for d in folders if d != "/"))
+        if beside:
+            bad.append(f"{', '.join(beside[:8])}{'...' if len(beside) > 8 else ''} changed beside a third party's entry: "
+                       "such a change is the entry in index.json, and its own folder where the pack is kept here, alone")
+    return lines, bad
+
+
+def fork_of(ref):
+    """Where this checkout left `ref`: their merge base, so what `ref` has
+    gained since is not read as this change's. `ref` itself where git
+    names none (a shallow checkout, a ref of another history)."""
+    r = subprocess.run(["git", "-C", ROOT, "merge-base", ref, "HEAD"], capture_output=True, text=True, check=False)
+    return r.stdout.strip() if r.returncode == 0 and r.stdout.strip() else ref
+
+
+def installs_offline(p):
+    """What is wrong with a third party's pack installed with no network
+    beyond the downloads it declares (offline-install.py), [] when it goes
+    through: its files taken at the commit the entry pins, then run."""
+    import shutil
+    import tempfile
+    offline = _load(os.path.join(HERE, "offline-install.py"), "offline_install")
+    url = "file://" + ROOT if p["url"].rstrip("/") in SELF else p["url"]
+    work = tempfile.mkdtemp(prefix="catalog-install.")
     try:
-        before = {p.get("name"): _key(p) for p in json.loads(r.stdout).get("packs", [])} if r.returncode == 0 else {}
-    except ValueError:
-        before = {}
-    return [p for p in packs if before.get(p.get("name")) != _key(p)]
+        g = ["git", "-c", f"safe.directory={work}", "-C", work]
+        for cmd in (["git", "init", "-q", work], [*g, "fetch", "-q", "--depth", "1", url, p["commit"]], [*g, "checkout", "-q", "--detach", "FETCH_HEAD"]):
+            r = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=600)
+            if r.returncode != 0:
+                return [f"{p['name']}: {url} could not be fetched at {p['commit'][:12]}: {((r.stderr or r.stdout).strip().splitlines() or ['git failed'])[-1]}"]
+        got = subprocess.run([*g, "rev-parse", "HEAD"], capture_output=True, text=True, check=False).stdout.strip()
+        if got != p["commit"]:
+            return [f"{p['name']}: {url} answered {got[:12]} where the entry pins {p['commit'][:12]}"]
+        return offline.run(os.path.join(work, str(p.get("path") or "").strip("/")), "required")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def files_since(ref):
+    """(files, added): what differs from `ref` in this repository's tracked
+    files, the working tree's own changes with it, and which of them `ref`
+    did not have."""
+    r = subprocess.run(["git", "-C", ROOT, "diff", "--name-status", "--no-renames", ref], capture_output=True, text=True, check=False)
+    rows = [ln.split("\t", 1) for ln in r.stdout.splitlines() if "\t" in ln] if r.returncode == 0 else []
+    return [f for _, f in rows], [f for st, f in rows if st == "A"]
 
 
 def vendor_of(url):
@@ -217,14 +376,26 @@ def one(checkout, changed_from, report):
 
 def main(argv):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--builderbot", required=True, action="append", metavar="[NAME=]DIR",
-                    help="a checkout of AerieOS; name one for each release still supported")
+    ap.add_argument("--builderbot", action="append", default=[], metavar="[NAME=]DIR",
+                    help="a checkout of AerieOS; name one for each release still supported (none, with --whose-from: whose alone)")
     ap.add_argument("--changed-from", default="", metavar="REF")
+    ap.add_argument("--whose-from", default="", metavar="REF",
+                    help="say whose each entry is that differs from the index at REF, and refuse a change that crosses owners")
+    ap.add_argument("--outside", action="store_true",
+                    help="with --whose-from or --changed-from: the change comes from outside this repository (a fork's pull request)")
+    ap.add_argument("--run-installs", action="store_true",
+                    help="with --whose-from or --changed-from: install each third party's pack that differs, with no network beyond what it declares")
     ap.add_argument("--signed", action="store_true")
     ap.add_argument("--one", default="", help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
+    if not a.builderbot and not a.whose_from:
+        ap.error("name a checkout of AerieOS with --builderbot, or --whose-from REF for whose each changed entry is alone")
     if a.one:
         return one(a.builderbot[0], a.changed_from, a.one)
+    if a.changed_from:
+        a.changed_from = fork_of(a.changed_from)
+    if a.whose_from:
+        a.whose_from = fork_of(a.whose_from)
     signer = _load(os.path.join(HERE, "catalog-sign.py"), "catalog_sign")
     with open(INDEX, encoding="utf-8") as f:
         d = json.load(f)
@@ -234,6 +405,8 @@ def main(argv):
     packs = [p for p in d["packs"] if not p.get("withdrawn")]
     if a.changed_from:
         packs = changed(packs, a.changed_from)
+    if not a.builderbot:
+        packs = []
     # Each checkout in a process of its own: two releases' modules of one
     # name cannot be loaded side by side.
     import tempfile
@@ -258,8 +431,35 @@ def main(argv):
         if not read_by.get(p["name"]):
             print(f"FAIL  {p['name']} is pack format {p.get('format', 1)}, which no AerieOS named here reads: name the release that does")
             problems += 1
+    # Whose each changed entry is, and a change that crosses owners refused.
+    since = a.whose_from or a.changed_from
+    if since:
+        files, added = files_since(since)
+        said, crossed = whose(index_at(since), d, files, a.outside, added)
+        print(f"== whose, against {since}", flush=True)
+        for ln in said or ["whose: no entry differs"]:
+            print("   " + ln)
+        for ln in crossed:
+            print("FAIL  " + ln)
+        problems += len(crossed)
+        # A third party's pack that differs is installed here with no
+        # network beyond the downloads it declares: one that fetches
+        # anything else fails before a maintainer reads it.
+        if a.run_installs:
+            before = {p.get("name"): p for p in index_at(since).get("packs", []) if isinstance(p, dict)}
+            for p in d["packs"]:
+                if p.get("withdrawn") or not owner_of(p) or before.get(p.get("name")) == p or p.get("kind") in ("app", "service"):
+                    continue
+                print(f"== {p['name']} installed with no network beyond what it declares", flush=True)
+                said = installs_offline(p)
+                for ln in said:
+                    print("FAIL  " + ln)
+                problems += len(said)
     if a.signed:
         signer.verify(os.path.join(ROOT, "catalog.pub"))
+    if not a.builderbot:
+        print(f"whose alone, nothing fetched: {problems} problem(s)")
+        return 1 if problems else 0
     print(f"{len(packs)} entr{'y' if len(packs) == 1 else 'ies'} held to {len(a.builderbot)} AerieOS release(s), {problems} problem(s)")
     return 1 if problems else 0
 

@@ -77,6 +77,59 @@ toolchain) and lists each under `credits`, `[{"name", "maker"}]`, in its
 manifest, which its Details page reads out. The check refuses an entry
 that names no maker.
 
+## Whose an entry is
+
+An entry at tier `official` or `aerie` is this repository's own. Any other
+is a third party's: its owner is the account its repository is under, and
+nobody else's change moves it. The check (`tools/catalog-check.py`) says
+whose each changed entry is, on every pull request, on every push to
+`main` and before the index is signed, and refuses a change that crosses
+owners:
+
+- Aerie's own entries and a third party's are never moved by one change.
+  Work on the shipped packs, by a maintainer, a coding session or
+  AerieOS's `tools/packs-export.py` (which rewrites the `official` entries
+  alone and keeps every other as it was), cannot carry a third party's
+  entry along.
+- One change moves one owner's entries.
+- A third party's entry changes only with the commit it pins: a new
+  `commit` and `sha256`, and what the manifest at that commit says. Its
+  `url` and `kind` never change, and it is never handed to another owner:
+  a pack that moved is a new entry.
+- With no new pin, only `withdrawn` and `tier` change, the two things that
+  are the maintainers' to say. An entry found wanting is withdrawn, never
+  removed.
+- A change that moves a third party's entry touches `index.json` (and
+  `index.sig`, which the maintainers' workflow commits; the pack's own
+  folder, where it is kept here) and nothing else of this repository.
+
+- A pull request from a fork comes from outside: it adds its entry (as
+  `vetted`) or moves its own, with its pack's own folder under `packs/`
+  where the pack is kept here, and never moves one of Aerie's entries or
+  changes a file that was here.
+
+A pull request is held to the copy of the check `main` has, so it cannot
+loosen the rule it is held to; `.github/CODEOWNERS` names the maintainers
+for the signature, the key, the tools, the workflows, the verified vendors
+and Aerie's own packs.
+
+## What an install downloads
+
+An entry pins a pack's own files. What the pack's install then takes from
+somewhere else is declared in its manifest (`install.fetch`, pack format
+3): each download's `https` address, the sha256 of what it answers, and
+the file inside the pack it is kept as. AerieOS fetches each and holds it
+to its sha256, and the install steps then run with no network, so a pinned
+commit pins everything the install brings.
+
+The check holds a third party's pack to that before a maintainer reads it:
+`tools/offline-install.py` takes the pack at its pin, fetches what it
+declares, and runs its install steps and its verify command with the
+network cut, on the check's own runner. A step that reaches for anything
+the manifest did not declare fails there, with what to declare. A pack
+whose install needs nothing from outside declares nothing and passes the
+same way.
+
 ## The framework's version
 
 The framework a manifest is written in has a version of its own, apart
@@ -133,6 +186,9 @@ In short:
    --format=tar COMMIT | sha256sum` at that commit (of the pack's folder,
    with a `path`), with its `maker` and `framework` repeated from the
    manifest. Never change `index.sig`: it is the maintainers'.
+   Your entry and nothing else: a pull request that also touches another
+   owner's entry, Aerie's own, or any other file here is refused by the
+   check ([Whose an entry is](#whose-an-entry-is)).
 3. The vetting check (`.github/workflows/check.yml`,
    `tools/catalog-check.py`) fetches each entry the pull request changes
    at its pin, checks the commit and the sha256, and holds its manifest to

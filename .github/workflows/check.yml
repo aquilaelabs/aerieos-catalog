@@ -3,6 +3,9 @@
 # supported carries them (aerieos-releases): an entry passes when the oldest
 # install that reads its pack format takes it as the newest does. A push to
 # main checks every entry and the maintainers' signature over the index.
+# Either way the check says whose each changed entry is and refuses a change
+# that crosses owners (catalog-check.py's whose): Aerie's own entries and a
+# third party's are never moved by one change.
 name: check
 on:
   pull_request:
@@ -21,6 +24,36 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install cryptography
+      # ...and the runner's own ability to cut the network for a step, which
+      # is what holds a submission's install to the downloads it declares:
+      # a runner that could not would let every one through.
+      - name: the check's own rules
+        env:
+          OFFLINE_CUT_REQUIRED: "1"
+        run: python3 -m unittest discover -s tools -p 'test_*.py'
+      # By the copy of the check main has, not the pull request's own: a
+      # change cannot loosen the rule it is held to.
+      - name: whose each changed entry is, by the rules main holds
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          set -euo pipefail
+          held="${RUNNER_TEMP}/held"
+          mkdir -p "${held}"
+          for f in catalog-check.py catalog-sign.py; do
+            git show "origin/${BASE}:tools/${f}" > "${held}/${f}"
+          done
+          # A pull request from a fork comes from outside: it never moves
+          # one of Aerie's entries or changes a file that was here.
+          outside=()
+          if [ "${HEAD_REPO}" != "${GITHUB_REPOSITORY}" ]; then outside=(--outside); fi
+          if grep -q -- '--whose-from' "${held}/catalog-check.py"; then
+            CATALOG_ROOT="${PWD}" python3 "${held}/catalog-check.py" --whose-from "origin/${BASE}" "${outside[@]}"
+          else
+            echo "main's check does not say whose an entry is yet: this pull request's own does, in the next step"
+          fi
       - name: the entries a pull request changes, on every AerieOS release still supported
         if: github.event_name == 'pull_request'
         env:
@@ -28,10 +61,19 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t releases < <(tools/aerieos-checkouts.sh)
-          python3 tools/catalog-check.py "${releases[@]}" --changed-from "origin/${BASE}"
+          # A third party's pack that differs is installed here too, with
+          # no network beyond the downloads it declares.
+          python3 tools/catalog-check.py "${releases[@]}" --changed-from "origin/${BASE}" --run-installs
       - name: every entry on every AerieOS release still supported, and the signature
         if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
           set -euo pipefail
           mapfile -t releases < <(tools/aerieos-checkouts.sh)
-          python3 tools/catalog-check.py "${releases[@]}" --signed
+          # Whose each entry is that this push moved: one that came by a
+          # pull request was held to it there, and one pushed straight to
+          # main is held to it here.
+          whose=()
+          if git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then whose=(--whose-from "${BEFORE}"); fi
+          python3 tools/catalog-check.py "${releases[@]}" --signed "${whose[@]}"

@@ -1,0 +1,18 @@
+# What only the maintainers change: the signature and the key it is checked
+# against, the tools and workflows that vet and sign, who a verified vendor
+# is, and which AerieOS releases the entries are held to. A pull request
+# that touches one asks a maintainer for review; with "Require review from
+# Code Owners" switched on for main, it is not merged without it.
+/index.sig              @aquilae-dev
+/catalog.pub            @aquilae-dev
+/verified-vendors.json  @aquilae-dev
+/aerieos-releases       @aquilae-dev
+/tools/                 @aquilae-dev
+/.github/               @aquilae-dev
+# Aerie's own packs: written by AerieOS's tools/packs-export.py and its
+# maintainers, never by a submission.
+/packs/official/        @aquilae-dev
+/packs/agents/          @aquilae-dev
+/packs/services/        @aquilae-dev
+/packs/aerie/           @aquilae-dev
+/packs/apps/            @aquilae-dev
