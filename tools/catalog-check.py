@@ -2,7 +2,7 @@
 """The vetting check (R169 step 3): what CI runs on every pull request and
 every push, before a maintainer reviews an entry and signs the index.
 
-    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside] [--signed]
+    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside] [--run-installs] [--signed]
 
 DIR is a checkout of AerieOS, whose own fetch and validators are the ones
 used, so an entry passes here exactly when an install would take it. Named
@@ -38,7 +38,12 @@ no new pin beyond the two things that are the maintainers' to say
 (withdrawn and tier), and anything else of this repository changed beside a
 third party's entry. --outside says the change comes from outside
 this repository (a pull request from a fork): it adds its entry, or moves
-its own, and never moves one of Aerie's or changes a file that was here. So work on Aerie's own packs, by a person, a session
+its own, and never moves one of Aerie's or changes a file that was here.
+
+--run-installs installs each third party's pack that differs, the way a
+node would, with no network beyond the downloads its manifest declares
+(install.fetch, each held to its sha256; offline-install.py): a pack whose
+install reaches for anything it did not declare fails here. So work on Aerie's own packs, by a person, a session
 or tools/packs-export.py, can never carry a third party's entry along, and
 a submission can never reach past its own.
 """
@@ -185,6 +190,29 @@ def fork_of(ref):
     names none (a shallow checkout, a ref of another history)."""
     r = subprocess.run(["git", "-C", ROOT, "merge-base", ref, "HEAD"], capture_output=True, text=True, check=False)
     return r.stdout.strip() if r.returncode == 0 and r.stdout.strip() else ref
+
+
+def installs_offline(p):
+    """What is wrong with a third party's pack installed with no network
+    beyond the downloads it declares (offline-install.py), [] when it goes
+    through: its files taken at the commit the entry pins, then run."""
+    import shutil
+    import tempfile
+    offline = _load(os.path.join(HERE, "offline-install.py"), "offline_install")
+    url = "file://" + ROOT if p["url"].rstrip("/") in SELF else p["url"]
+    work = tempfile.mkdtemp(prefix="catalog-install.")
+    try:
+        g = ["git", "-c", f"safe.directory={work}", "-C", work]
+        for cmd in (["git", "init", "-q", work], [*g, "fetch", "-q", "--depth", "1", url, p["commit"]], [*g, "checkout", "-q", "--detach", "FETCH_HEAD"]):
+            r = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=600)
+            if r.returncode != 0:
+                return [f"{p['name']}: {url} could not be fetched at {p['commit'][:12]}: {((r.stderr or r.stdout).strip().splitlines() or ['git failed'])[-1]}"]
+        got = subprocess.run([*g, "rev-parse", "HEAD"], capture_output=True, text=True, check=False).stdout.strip()
+        if got != p["commit"]:
+            return [f"{p['name']}: {url} answered {got[:12]} where the entry pins {p['commit'][:12]}"]
+        return offline.run(os.path.join(work, str(p.get("path") or "").strip("/")), "required")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
 
 
 def files_since(ref):
@@ -355,6 +383,8 @@ def main(argv):
                     help="say whose each entry is that differs from the index at REF, and refuse a change that crosses owners")
     ap.add_argument("--outside", action="store_true",
                     help="with --whose-from or --changed-from: the change comes from outside this repository (a fork's pull request)")
+    ap.add_argument("--run-installs", action="store_true",
+                    help="with --whose-from or --changed-from: install each third party's pack that differs, with no network beyond what it declares")
     ap.add_argument("--signed", action="store_true")
     ap.add_argument("--one", default="", help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
@@ -412,6 +442,19 @@ def main(argv):
         for ln in crossed:
             print("FAIL  " + ln)
         problems += len(crossed)
+        # A third party's pack that differs is installed here with no
+        # network beyond the downloads it declares: one that fetches
+        # anything else fails before a maintainer reads it.
+        if a.run_installs:
+            before = {p.get("name"): p for p in index_at(since).get("packs", []) if isinstance(p, dict)}
+            for p in d["packs"]:
+                if p.get("withdrawn") or not owner_of(p) or before.get(p.get("name")) == p or p.get("kind") in ("app", "service"):
+                    continue
+                print(f"== {p['name']} installed with no network beyond what it declares", flush=True)
+                said = installs_offline(p)
+                for ln in said:
+                    print("FAIL  " + ln)
+                problems += len(said)
     if a.signed:
         signer.verify(os.path.join(ROOT, "catalog.pub"))
     if not a.builderbot:

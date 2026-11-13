@@ -47,7 +47,7 @@ jobs:
           mapfile -t releases < <(tools/aerieos-checkouts.sh "${AERIEOS_REF}")
           # ...and whose each entry is that the branch moved: nothing that
           # crosses owners is signed.
-          python3 tools/catalog-check.py "${releases[@]}" --whose-from origin/main
+          python3 tools/catalog-check.py "${releases[@]}" --whose-from origin/main --run-installs
       - name: Sign the index
         env:
           CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}

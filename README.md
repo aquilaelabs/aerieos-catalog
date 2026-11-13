@@ -113,6 +113,23 @@ loosen the rule it is held to; `.github/CODEOWNERS` names the maintainers
 for the signature, the key, the tools, the workflows, the verified vendors
 and Aerie's own packs.
 
+## What an install downloads
+
+An entry pins a pack's own files. What the pack's install then takes from
+somewhere else is declared in its manifest (`install.fetch`, pack format
+3): each download's `https` address, the sha256 of what it answers, and
+the file inside the pack it is kept as. AerieOS fetches each and holds it
+to its sha256, and the install steps then run with no network, so a pinned
+commit pins everything the install brings.
+
+The check holds a third party's pack to that before a maintainer reads it:
+`tools/offline-install.py` takes the pack at its pin, fetches what it
+declares, and runs its install steps and its verify command with the
+network cut, on the check's own runner. A step that reaches for anything
+the manifest did not declare fails there, with what to declare. A pack
+whose install needs nothing from outside declares nothing and passes the
+same way.
+
 ## The framework's version
 
 The framework a manifest is written in has a version of its own, apart

@@ -24,7 +24,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install cryptography
+      # ...and the runner's own ability to cut the network for a step, which
+      # is what holds a submission's install to the downloads it declares:
+      # a runner that could not would let every one through.
       - name: the check's own rules
+        env:
+          OFFLINE_CUT_REQUIRED: "1"
         run: python3 -m unittest discover -s tools -p 'test_*.py'
       # By the copy of the check main has, not the pull request's own: a
       # change cannot loosen the rule it is held to.
@@ -56,7 +61,9 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t releases < <(tools/aerieos-checkouts.sh)
-          python3 tools/catalog-check.py "${releases[@]}" --changed-from "origin/${BASE}"
+          # A third party's pack that differs is installed here too, with
+          # no network beyond the downloads it declares.
+          python3 tools/catalog-check.py "${releases[@]}" --changed-from "origin/${BASE}" --run-installs
       - name: every entry on every AerieOS release still supported, and the signature
         if: github.event_name == 'push'
         env:
