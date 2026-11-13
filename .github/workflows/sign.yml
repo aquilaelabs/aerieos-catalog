@@ -45,7 +45,9 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t releases < <(tools/aerieos-checkouts.sh "${AERIEOS_REF}")
-          python3 tools/catalog-check.py "${releases[@]}"
+          # ...and whose each entry is that the branch moved: nothing that
+          # crosses owners is signed.
+          python3 tools/catalog-check.py "${releases[@]}" --whose-from origin/main
       - name: Sign the index
         env:
           CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
