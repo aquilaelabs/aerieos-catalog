@@ -1,0 +1,24 @@
+services:
+  paperclip:
+    # Release v2026.1106.0: the image publishes a tag per commit, not per version.
+    image: ghcr.io/paperclipai/paperclip:sha-d69631b
+    restart: unless-stopped
+    environment:
+      USER_UID: ${PUID}
+      USER_GID: ${PGID}
+      TZ: ${TZ}
+      HOST: 0.0.0.0
+      PAPERCLIP_HOME: /paperclip
+      PAPERCLIP_DEPLOYMENT_MODE: authenticated
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: private
+      PAPERCLIP_PUBLIC_URL: ${PUBLIC_URL}
+      BETTER_AUTH_SECRET: ${AUTH_SECRET}
+      PAPERCLIP_AGENT_JWT_SECRET: ${AGENT_SECRET}
+      PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: ${APPROVAL_SECRET}
+      ANTHROPIC_BASE_URL: ${ROUTER_URL}
+      ANTHROPIC_API_KEY: ${ROUTER_KEY}
+      ANTHROPIC_AUTH_TOKEN: ${ROUTER_KEY}
+    ports:
+      - "${PORT}:3100"
+    volumes:
+      - ${DATA}:/paperclip

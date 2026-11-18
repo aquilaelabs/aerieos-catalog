@@ -1,5 +1,5 @@
 {
- "about": "The request page for a media library: a person asks for a film or a series and it is handed to Radarr or Sonarr. It talks to Jellyfin or Plex and to Sonarr and Radarr, each an app installed apart, at its address on this machine and its port.",
+ "about": "The request page for a media library: a person asks for a film or a series and it goes to Radarr or Sonarr. It reaches them and Jellyfin or Plex at this machine's address.",
  "compose": "compose.yml",
  "fields": [
   {

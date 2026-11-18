@@ -1,5 +1,5 @@
 {
- "about": "Watches for the films you want, sends each to a download client, and files it in your library. It finds the indexers Prowlarr keeps and the downloads of qBittorrent at their address on this machine and their port, each an app of its own.",
+ "about": "Watches for the films you want, sends each to a download client and files it in your library. It reaches Prowlarr and qBittorrent at this machine's address and their ports.",
  "compose": "compose.yml",
  "fields": [
   {
