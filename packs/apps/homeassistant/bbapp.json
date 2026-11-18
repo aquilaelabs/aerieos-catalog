@@ -1,0 +1,29 @@
+{
+ "about": "Home automation. It runs on the machine's own network so it finds the devices around it, and reaches Bluetooth through the machine's dbus.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its settings",
+   "default": "apps/homeassistant",
+   "example": "",
+   "help": "its own folder, which holds its configuration, automations and history"
+  }
+ ],
+ "format": 4,
+ "framework": "4.2",
+ "label": "Home Assistant",
+ "license": {
+  "label": "Apache-2.0 (home-assistant/core)",
+  "url": "https://github.com/home-assistant/core/blob/dev/LICENSE.md"
+ },
+ "maker": "Open Home Foundation",
+ "name": "homeassistant",
+ "network": "host",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 8123
+}

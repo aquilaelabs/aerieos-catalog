@@ -42,11 +42,19 @@ kind. [Submitting a pack](#submitting-a-pack), below, is its short form.
   release shipped, so a vendor's changed installer is answered by a commit
   and a signature here, with no new release.
 - `packs/apps/NAME`: a Docker app, `bbapp.json` (name, label, about, port,
-  media, platforms, license) with its `compose.yml` beside it, every image
-  pinned to a tag and `${PORT}`, `${DATA}`, `${MEDIA}`, `${PUID}`,
-  `${PGID}` and `${TZ}` the only blanks, which New container fills on the
-  node picked; its index entry carries `"kind": "app"`. `packs/apps/whoami`
-  (traefik/whoami, MIT) is the one to prove a deploy with.
+  maker, platforms, license) with its `compose.yml` beside it, every image
+  pinned to a tag. From pack format 4 an app declares its own `fields`, each
+  the variable it fills, its label, its kind (a folder, a port, a line of
+  text, a secret made for it, a choice, a switch), a default and a line of
+  help, which New container draws as the app's panel; `${PUID}`, `${PGID}`,
+  `${TZ}` and `${PORT}` stay AerieOS's own, asked for in the same words for
+  every app. One on the machine's own network says `"network": "host"`. One
+  written before format 4 has `${PORT}`, `${DATA}`, `${MEDIA}`, `${PUID}`,
+  `${PGID}` and `${TZ}` as its only blanks. Its index entry carries `"kind":
+  "app"`. Aerie's own are tier `aerie`: Jellyfin, Plex, Sonarr, Radarr,
+  Prowlarr, Seerr, qBittorrent, Immich, Nextcloud, Home Assistant and
+  Syncthing, and `packs/apps/whoami` (traefik/whoami, MIT), the one to prove
+  a deploy with.
 - `packs/`: community manifests under review too, one folder per
   submission, before an entry pins them in the index.
 

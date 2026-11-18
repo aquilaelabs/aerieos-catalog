@@ -1,0 +1,16 @@
+services:
+  syncthing:
+    image: syncthing/syncthing:1.29.6
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    ports:
+      - "${PORT}:8384"
+      - "22000:22000/tcp"
+      - "22000:22000/udp"
+      - "21027:21027/udp"
+    volumes:
+      - ${DATA}/config:/var/syncthing/config
+      - ${SYNC}:/var/syncthing/Sync

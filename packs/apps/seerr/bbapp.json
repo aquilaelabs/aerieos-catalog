@@ -1,0 +1,27 @@
+{
+ "about": "The request page for a media library: a person asks for a film or a series and it is handed to Radarr or Sonarr. It talks to Jellyfin or Plex and to Sonarr and Radarr, each an app installed apart, at its address on this machine and its port.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its settings",
+   "default": "apps/seerr",
+   "help": "its own folder, which holds its settings and its database; owned by the user it runs as"
+  }
+ ],
+ "format": 4,
+ "framework": "4.2",
+ "label": "Seerr",
+ "license": {
+  "label": "MIT (seerr-team/seerr)",
+  "url": "https://github.com/seerr-team/seerr"
+ },
+ "maker": "the Seerr team",
+ "name": "seerr",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 5055
+}

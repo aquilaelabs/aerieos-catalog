@@ -1,0 +1,16 @@
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:5.0.4
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      WEBUI_PORT: ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - ${DATA}/config:/config
+      - ${DOWNLOADS}:/downloads

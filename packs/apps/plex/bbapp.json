@@ -1,0 +1,43 @@
+{
+ "about": "A media server with Plex's apps and account: films, series and music on every screen. Claim it with a token from plex.tv/claim, or on its first open.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its settings and transcodes",
+   "default": "apps/plex",
+   "example": "",
+   "help": "its own folder, which holds its library's database and what it transcodes"
+  },
+  {
+   "var": "MEDIA",
+   "kind": "folder",
+   "label": "Its media",
+   "default": "",
+   "example": "/mnt/tank/media",
+   "help": "the films, series and music it serves; read-only to it"
+  },
+  {
+   "var": "CLAIM",
+   "kind": "text",
+   "label": "Claim token",
+   "example": "claim-…",
+   "help": "from plex.tv/claim, good for four minutes, to tie it to your Plex account as it starts; or leave it empty and claim it on its first open"
+  }
+ ],
+ "format": 4,
+ "framework": "4.2",
+ "label": "Plex",
+ "license": {
+  "label": "Plex Media Server: proprietary, under Plex's terms of service",
+  "url": "https://www.plex.tv/about/privacy-legal/plex-terms-of-service/"
+ },
+ "maker": "Plex",
+ "name": "plex",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 32400
+}

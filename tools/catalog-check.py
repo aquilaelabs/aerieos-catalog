@@ -283,7 +283,10 @@ def check_entry(p, toolpacks, nasapps, reads=1):
             meta = json.loads(got["files"]["bbapp.json"].decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
             return [f"{name}: bbapp.json is not JSON"]
-        seen = nasapps.check(got["files"]["compose.yml"].decode("utf-8", "replace"))
+        # The whole app as the release keeps it where it reads more than a
+        # compose (pack format 4: an app's own fields), else its compose.
+        compose = got["files"]["compose.yml"].decode("utf-8", "replace")
+        seen = nasapps.check_app(meta, compose) if hasattr(nasapps, "check_app") else nasapps.check(compose)
         if seen.get("error"):
             bad.append(f"{name}: compose.yml: {seen['error']}")
         if meta.get("name") != name:

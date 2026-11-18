@@ -1,0 +1,36 @@
+{
+ "about": "Folders kept the same between this machine and others, with no cloud between them.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its settings",
+   "default": "apps/syncthing",
+   "example": "",
+   "help": "its own folder, which holds its keys and the devices it knows"
+  },
+  {
+   "var": "SYNC",
+   "kind": "folder",
+   "label": "Its synced folders",
+   "default": "",
+   "example": "/mnt/tank/sync",
+   "help": "the share's folder it keeps in step with the other machines"
+  }
+ ],
+ "format": 4,
+ "framework": "4.2",
+ "label": "Syncthing",
+ "license": {
+  "label": "MPL-2.0 (syncthing/syncthing)",
+  "url": "https://github.com/syncthing/syncthing/blob/main/LICENSE"
+ },
+ "maker": "Syncthing Foundation",
+ "name": "syncthing",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 8384
+}
