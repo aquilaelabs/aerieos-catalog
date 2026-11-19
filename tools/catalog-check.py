@@ -51,6 +51,7 @@ import argparse
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -262,6 +263,15 @@ def check_entry(p, toolpacks, nasapps, reads=1):
     maker = p.get("maker")
     if not (isinstance(maker, str) and maker.strip() and len(maker) <= 60 and maker.isprintable() and maker == " ".join(maker.split())):
         return [f"{name}: an entry names who its tool is by, an organization or a person, in maker (one line of up to 60 characters)"]
+    # What it is about and when it came (AerieOS R256): one to three of the
+    # topics the AerieOS checked against keeps, and the day it was added,
+    # where the entry says them; a release from before topics leaves them out.
+    pf = getattr(toolpacks, "packformat", None)
+    why = pf.topics_refused(p) if pf is not None and hasattr(pf, "topics_refused") else ""
+    if why:
+        return [f"{name}: {why}"]
+    if p.get("added") is not None and not re.fullmatch(r"20\d\d-[01]\d-[0-3]\d", str(p.get("added"))):
+        return [f"{name}: added is the day the entry came into the catalog, as YYYY-MM-DD"]
     if p["tier"] == "official" and not (p["url"].rstrip("/") in SELF and path.startswith(OWN)):
         return [f"{name}: an official entry is one of this repository's own, in its packs/official, packs/agents or packs/services"]
     # Packaged by Aerie is this repository's own too: what its maintainers

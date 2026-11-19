@@ -21,7 +21,12 @@
     "darwin/amd64"
    ],
    "maker": "Eclipse Adoptium",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages",
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "android-tools",
@@ -36,7 +41,11 @@
     "linux/*"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "android-cmake",
@@ -51,7 +60,11 @@
     "linux/*"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "android-emulator",
@@ -66,7 +79,11 @@
     "linux/amd64"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "android-platform-tools",
@@ -81,7 +98,11 @@
     "linux/amd64"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "android-platforms",
@@ -96,7 +117,11 @@
     "linux/*"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "android-build-tools",
@@ -111,7 +136,11 @@
     "linux/*"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "android-ndk",
@@ -126,7 +155,12 @@
     "linux/*"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile",
+    "languages"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "flutter",
@@ -142,7 +176,12 @@
     "darwin/*"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile",
+    "languages"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "go",
@@ -160,7 +199,11 @@
     "darwin/amd64"
    ],
    "maker": "Google",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "dotnet",
@@ -175,7 +218,12 @@
     "linux/*"
    ],
    "maker": "Microsoft",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages",
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "node",
@@ -193,7 +241,12 @@
     "darwin/amd64"
    ],
    "maker": "OpenJS Foundation",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages",
+    "web"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "python",
@@ -208,7 +261,11 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "playwright",
@@ -223,7 +280,12 @@
     "linux/*"
    ],
    "maker": "Microsoft",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "web",
+    "devtools"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "lint-tools",
@@ -238,7 +300,11 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "devtools"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "ffmpeg",
@@ -254,7 +320,11 @@
     "linux/arm64"
    ],
    "maker": "FFmpeg project",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "audio",
@@ -269,7 +339,12 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "media",
+    "ai"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "pytorch",
@@ -284,7 +359,11 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "ai"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "graphics",
@@ -299,7 +378,11 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "diagrams",
@@ -314,7 +397,11 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "documents"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "documents",
@@ -329,7 +416,11 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "documents"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "office",
@@ -344,7 +435,11 @@
     "linux/amd64"
    ],
    "maker": "The Document Foundation",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "documents"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "ftp",
@@ -359,7 +454,12 @@
     "linux/amd64"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "files",
+    "network"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "language-servers",
@@ -375,7 +475,11 @@
     "darwin/*"
    ],
    "maker": "AerieOS",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "devtools"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "kotlin-lsp",
@@ -391,7 +495,11 @@
     "linux/arm64"
    ],
    "maker": "JetBrains",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "devtools"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "rust",
@@ -406,7 +514,11 @@
     "linux/amd64"
    ],
    "maker": "The Rust Project",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "swift",
@@ -421,7 +533,12 @@
     "linux/amd64"
    ],
    "maker": "Apple",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages",
+    "mobile"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "zig",
@@ -436,7 +553,11 @@
     "linux/amd64"
    ],
    "maker": "Zig Software Foundation",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "languages"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "xcodes",
@@ -451,7 +572,12 @@
     "darwin/*"
    ],
    "maker": "XcodesOrg",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "mobile",
+    "devtools"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "claude",
@@ -467,7 +593,11 @@
    ],
    "maker": "Anthropic",
    "framework": "2.2",
-   "install_rev": 1
+   "install_rev": 1,
+   "topics": [
+    "ai"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "codex",
@@ -483,7 +613,11 @@
    ],
    "maker": "OpenAI",
    "framework": "2.2",
-   "install_rev": 1
+   "install_rev": 1,
+   "topics": [
+    "ai"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "copilot",
@@ -499,7 +633,11 @@
    ],
    "maker": "GitHub",
    "framework": "2.2",
-   "install_rev": 1
+   "install_rev": 1,
+   "topics": [
+    "ai"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "grok",
@@ -515,7 +653,11 @@
    ],
    "maker": "xAI",
    "framework": "2.2",
-   "install_rev": 1
+   "install_rev": 1,
+   "topics": [
+    "ai"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "open",
@@ -531,7 +673,11 @@
    ],
    "maker": "Anomaly",
    "framework": "2.1",
-   "install_rev": 1
+   "install_rev": 1,
+   "topics": [
+    "ai"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "model-router",
@@ -548,7 +694,12 @@
    ],
    "maker": "AerieOS",
    "framework": "2.1",
-   "kind": "service"
+   "kind": "service",
+   "topics": [
+    "ai",
+    "network"
+   ],
+   "added": "2026-11-11"
   },
   {
    "name": "whoami",
@@ -565,7 +716,12 @@
     "linux/arm64"
    ],
    "maker": "Traefik Labs",
-   "framework": "2.1"
+   "framework": "2.1",
+   "topics": [
+    "web",
+    "network"
+   ],
+   "added": "2026-10-28"
   },
   {
    "name": "gemini",
@@ -587,7 +743,11 @@
    "framework": "2.1",
    "works_with": [
     "0.9"
-   ]
+   ],
+   "topics": [
+    "ai"
+   ],
+   "added": "2026-11-11"
   }
  ]
 }
