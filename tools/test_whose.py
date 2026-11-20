@@ -93,6 +93,34 @@ class Whose(unittest.TestCase):
             said = self.bad(after(acme_cli={field: value}))
             self.assertTrue(any(f"{field} changed with no new pin" in b for b in said), (field, said))
 
+    def test_what_the_maintainers_tools_write(self):
+        # What an entry's downloads are held to, its older pins and the
+        # format fields are written from the manifest at the pin and held
+        # to it by the check: a rewrite of them is no change of a third
+        # party's entry with no new pin.
+        older = [{"format": 1, "commit": "c" * 40, "sha256": "3" * 64, "held": "pinned"}]
+        for fields in ({"held": "pinned"}, {"held": "installer", "online": "Its installer downloads the rest from its vendor."},
+                       {"older": older}, {"format": 5, "framework": "5.2"}, {"held": "pinned", "format": 5, "framework": "5.2", "older": older}):
+            lines, bad = cc.whose(BASE, after(acme_cli=fields), ("index.json", "index.sig"))
+            self.assertEqual(bad, [], fields)
+            self.assertTrue(any("acme-cli: https://github.com/acme/'s, no new pin" in ln for ln in lines), lines)
+        # ...and dropped again the same way.
+        had = copy.deepcopy(BASE)
+        next(p for p in had["packs"] if p["name"] == "acme-cli").update(held="pinned", older=older)
+        now = copy.deepcopy(had)
+        del next(p for p in now["packs"] if p["name"] == "acme-cli")["older"]
+        self.assertEqual(cc.whose(had, now, ("index.json",))[1], [])
+        # Anything else beside them still needs a new pin.
+        said = self.bad(after(acme_cli={"held": "pinned", "about": "other words"}))
+        self.assertTrue(any("about changed with no new pin" in b and "held" not in b.split(" changed")[0] for b in said), said)
+        # Every other rule stands: such a rewrite of a third party's entry
+        # is still not made beside Aerie's own, or beside another owner's.
+        self.assertTrue(any("one or the other, never both" in b for b in self.bad(after(jdk={"held": "pinned"}, acme_cli={"held": "pinned"}))))
+        self.assertTrue(any("more than one owner" in b for b in self.bad(after(acme_cli={"held": "pinned"}, other_tool={"held": "pinned"}))))
+        # ...nor does it reach what never changes, or anything else here.
+        self.assertTrue(any("never changes its kind" in b for b in self.bad(after(acme_cli={"held": "pinned", "kind": "app"}))))
+        self.assertTrue(self.bad(after(acme_cli={"held": "pinned"}), ("index.json", "tools/catalog-check.py")))
+
     def test_its_address_never(self):
         now = after(acme_cli={"url": "https://github.com/acme/another", "commit": "b" * 40})
         self.assertTrue(any("never changes its url" in b for b in self.bad(now)))
