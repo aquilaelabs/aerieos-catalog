@@ -3,14 +3,14 @@
   "2": "0.9.0"
  },
  "version": 1,
- "generated": "2026-11-12T21:34:58Z",
+ "generated": "2026-11-20T22:23:07Z",
  "packs": [
   {
    "name": "jdk",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/jdk",
-   "sha256": "66825f49d7e0ccc41562a617ff95eb3f4e9d7b5a665a6619062f853f6fe27e0b",
+   "sha256": "90330a024a545b8448d680a39bc9a3bf1b39e5eac02cfa6edaaeb7e3d5385347",
    "tier": "official",
    "withdrawn": false,
    "about": "Java 21, which Gradle, sdkmanager and the emulator tools need. The first thing a node needs for Android work.",
@@ -20,8 +20,12 @@
     "darwin/arm64",
     "darwin/amd64"
    ],
+   "format": 5,
+   "label": "JDK 21 (Temurin)",
    "maker": "Eclipse Adoptium",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "languages",
     "mobile"
@@ -31,17 +35,21 @@
   {
    "name": "android-tools",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/android-tools",
-   "sha256": "08fe91d6810d0754ff6ca0c6c53d00cba8bf6099eb1fcf6bd358af379a022419",
+   "sha256": "2c428c1d0b20691c28c1ac9f22914b9b9443a476ca7fae9eb9f2a604d5519904",
    "tier": "official",
    "withdrawn": false,
    "about": "sdkmanager and avdmanager, through which every other Android toolchain installs. Sets this node's ANDROID_HOME.",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Android command-line tools",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "mobile"
    ],
@@ -50,17 +58,22 @@
   {
    "name": "android-cmake",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/android-cmake",
-   "sha256": "37a8737a9a17f6c1a1d3fa29d1a73677ff1c265b4ab9771d17c788cd1336c2a5",
+   "sha256": "0a54c5ffc96e54105b212ae484009d11350d0c57c669a8c5a8b9b9f88c367db1",
    "tier": "official",
    "withdrawn": false,
    "about": "The CMake the NDK's build system uses.",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Android CMake",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "sdkmanager downloads this package from dl.google.com and checks it against Google's own listing",
+   "shipped_rev": 2,
    "topics": [
     "mobile"
    ],
@@ -69,17 +82,22 @@
   {
    "name": "android-emulator",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/android-emulator",
-   "sha256": "cf188239c0e7d1b4641577d49fc378b445b1dffd97c534fd8c217d25fbc9d177",
+   "sha256": "511893f98241862073ac121fbbb3055944682c1357fc18b84fa19503c1039137",
    "tier": "official",
    "withdrawn": false,
    "about": "The Android emulator. Its system images, one per API level, are added on the Emulator tab. Google ships it for x86_64 Linux only.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Android emulator",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "sdkmanager downloads this package from dl.google.com and checks it against Google's own listing",
+   "shipped_rev": 2,
    "topics": [
     "mobile"
    ],
@@ -88,17 +106,22 @@
   {
    "name": "android-platform-tools",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/android-platform-tools",
-   "sha256": "b06db386485d31c37a1159beee3d3e8d7ac12b6ef11afa436bd11c09278a7907",
+   "sha256": "7ba673acfe0c66a83befb296bd1a0695843e56322233a66efb8930ccd063abca",
    "tier": "official",
    "withdrawn": false,
    "about": "adb and the other tools that talk to a phone or an emulator; the emulator and the Phone tab need it. Google ships it for x86_64 Linux only.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Android platform tools",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "sdkmanager downloads this package from dl.google.com and checks it against Google's own listing",
+   "shipped_rev": 2,
    "topics": [
     "mobile"
    ],
@@ -107,17 +130,22 @@
   {
    "name": "android-platforms",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/android-platforms",
-   "sha256": "59b7572461c80c928b09e5979b88d7456c14c581dda1d6885f2293dfe83b2f30",
+   "sha256": "cd81b88c9596d5b0b228b881fb813996bd244c8b53d567f9f03831a0a095027f",
    "tier": "official",
    "withdrawn": false,
    "about": "The android.jar a build compiles against (compileSdk), at the newest level Google publishes. Update adds the next level beside it, so older projects keep building. Removing this removes every level.",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Android SDK Platform (newest level)",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "sdkmanager downloads this package from dl.google.com and checks it against Google's own listing",
+   "shipped_rev": 2,
    "topics": [
     "mobile"
    ],
@@ -126,17 +154,22 @@
   {
    "name": "android-build-tools",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/android-build-tools",
-   "sha256": "5efcd1de0499172c4ed0f09f5155f3c0cc8304d7f6d3aa46081c34d9bcc6a321",
+   "sha256": "cb7892be334e2163ac6885a16b0699d34fbe37b379e74a0b81098a54a737b2e2",
    "tier": "official",
    "withdrawn": false,
    "about": "aapt2, d8, zipalign and apksigner at the newest stable version. Update adds the next beside it.",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Android SDK Build-Tools (newest)",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "sdkmanager downloads this package from dl.google.com and checks it against Google's own listing",
+   "shipped_rev": 2,
    "topics": [
     "mobile"
    ],
@@ -145,17 +178,22 @@
   {
    "name": "android-ndk",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/android-ndk",
-   "sha256": "3f225e3d360fc9646b16359645a1a7117fd910440af3c46713bd77260b0326a7",
+   "sha256": "051e21fa63ed55436c6424cdd245c181e390e5886f1660ef8f3bf705590433f9",
    "tier": "official",
    "withdrawn": false,
    "about": "Native development kit, for C and C++ inside an Android app.",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Android NDK",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "sdkmanager downloads this package from dl.google.com and checks it against Google's own listing",
+   "shipped_rev": 2,
    "topics": [
     "mobile",
     "languages"
@@ -165,9 +203,9 @@
   {
    "name": "flutter",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/flutter",
-   "sha256": "319c480878aa4b2fcb44b389044b217c9ec4aac43803592353a8cd5e7148f452",
+   "sha256": "e02dc3db3c9238fc2def24ed9157b4398ef80770d740d6ebaa03c2fd4757a7ef",
    "tier": "official",
    "withdrawn": false,
    "about": "Flutter with its Dart SDK. Builds Android apps on Linux, and iOS too on a Mac with Xcode.",
@@ -175,8 +213,13 @@
     "linux/*",
     "darwin/*"
    ],
+   "format": 5,
+   "label": "Flutter",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "its first run downloads the Dart SDK and its engine from storage.googleapis.com, and its packages from pub.dev",
+   "shipped_rev": 2,
    "topics": [
     "mobile",
     "languages"
@@ -186,9 +229,9 @@
   {
    "name": "go",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/go",
-   "sha256": "f2cd7af9c8e02b1b2fc3564231a15f5063db15504ea228afccfb5b080c2bf839",
+   "sha256": "cf2b3b1287975ca9cb5a70e80289abbf3cb4d3a1556c30c2e2a864b3fd8f4048",
    "tier": "official",
    "withdrawn": false,
    "about": "Go, which cross-compiles to Windows, macOS, Linux and ARM with nothing else to install.",
@@ -198,8 +241,12 @@
     "darwin/arm64",
     "darwin/amd64"
    ],
+   "format": 5,
+   "label": "Go",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "languages"
    ],
@@ -208,17 +255,22 @@
   {
    "name": "dotnet",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/dotnet",
-   "sha256": "dfc32bcaee63707e1da8af82ab089f6134dedb604b63751db88dbccb3267319f",
+   "sha256": "72696258afde2e39747831bd35cab1bc1f2535494ed7c9055209a26d37a18ec1",
    "tier": "official",
    "withdrawn": false,
    "about": "The .NET SDK plus the maui-android workload: Android apps from C#.",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": ".NET + MAUI",
    "maker": "Microsoft",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "dotnet downloads the maui-android workload from api.nuget.org",
+   "shipped_rev": 2,
    "topics": [
     "languages",
     "mobile"
@@ -240,8 +292,10 @@
     "darwin/arm64",
     "darwin/amd64"
    ],
+   "label": "Node.js",
    "maker": "OpenJS Foundation",
    "framework": "2.1",
+   "held": "pinned",
    "topics": [
     "languages",
     "web"
@@ -251,17 +305,22 @@
   {
    "name": "python",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/python",
-   "sha256": "d36ed7f0aed57648b43c109f3e9eb9688ea1d730e4b7606d717265b0d300a3cb",
+   "sha256": "5856172e2654b234269552bfb29f93fe594bddbec1ffa32ed2e806170501cd67",
    "tier": "official",
    "withdrawn": false,
    "about": "uv and a Python 3.12 with pip and venv, for a project's own dependencies: uv venv, then uv pip install -r requirements.txt. The node's own python3 has neither.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Python (uv)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "uv downloads the Python 3.12 interpreter from GitHub and checks it against the sha256 uv carries for it",
+   "shipped_rev": 2,
    "topics": [
     "languages"
    ],
@@ -270,17 +329,22 @@
   {
    "name": "playwright",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/playwright",
-   "sha256": "a273c33a5277ee300f9e1f1f5b5481cef43dcb7c23d0582bad6162f9b58c9869",
+   "sha256": "38d66399d075d69b33ad7b635c76cbda03ece8ae898c06dbacbeb79a159463e5",
    "tier": "official",
    "withdrawn": false,
    "about": "Chromium, Firefox and WebKit with the module that drives them, for aerie capture shot and browser tests. Needs node.",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Playwright browsers",
    "maker": "Microsoft",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "Playwright downloads its Chromium, Firefox and WebKit builds from cdn.playwright.dev, and nothing here checks them",
+   "shipped_rev": 2,
    "topics": [
     "web",
     "devtools"
@@ -290,17 +354,21 @@
   {
    "name": "lint-tools",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/lint-tools",
-   "sha256": "8fa26898341ef72aafe975d53977679e6b307daf10ab3f0e1d0d4c2d39b22122",
+   "sha256": "d230d2a2ed3889c1dad61f3de5224f7bc0f160a4c49a3431c21d9964ff2dcbef",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie lint runs: shellcheck, hadolint, actionlint and ruff, with yq and fd. Without it, aerie lint on a node skips its checks.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Lint tools (shellcheck, hadolint, actionlint, ruff, yq, fd)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "devtools"
    ],
@@ -309,9 +377,9 @@
   {
    "name": "ffmpeg",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/ffmpeg",
-   "sha256": "882fbf0997118aeb3d9b652667ba14222e54c088f84f9a65e8835c84f535fb1f",
+   "sha256": "bba24d96e26d045b87153f71719a7e765967200d547439dfe6daf302473fa381",
    "tier": "official",
    "withdrawn": false,
    "about": "ffmpeg, ffprobe and ffplay, for cutting, converting and sizing video and audio, and for turning a recording into frames a session can look at.",
@@ -319,8 +387,12 @@
     "linux/amd64",
     "linux/arm64"
    ],
+   "format": 5,
+   "label": "FFmpeg (video and audio)",
    "maker": "FFmpeg project",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "media"
    ],
@@ -329,17 +401,21 @@
   {
    "name": "audio",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/audio",
-   "sha256": "eb410dc6600f0784e66bab7c2a040f261aaa3bb3a53e227a86d4d389a9ebbf32",
+   "sha256": "2af87adbdaf92d196d78539f4557762be2d387afa4a77f018a2150fd68c40a95",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool sound say and hear run: piper turns text into speech, and whisper turns a recording back into text with its times. About 800 MB.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Speech in and out (piper, whisper)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "media",
     "ai"
@@ -349,17 +425,21 @@
   {
    "name": "pytorch",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/pytorch",
-   "sha256": "c05a2bb9bf10461e86e19f35b55657884adb38ef5d3016e2c08b78203d0c1023",
+   "sha256": "4d4a3fd5ad40cc2ebf4526232d2e9389ac0a70c7b0cf23a8b018cef65a6a3472",
    "tier": "official",
    "withdrawn": false,
    "about": "PyTorch with CUDA, numpy and ONNX, run as python-ml, for training or running a model on the node's NVIDIA card (driver 580 or newer); without a card it runs on the CPU. About 6 GB.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "PyTorch with CUDA (python-ml, numpy, ONNX)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "ai"
    ],
@@ -368,17 +448,21 @@
   {
    "name": "graphics",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/graphics",
-   "sha256": "bd3da3cb63e8fa75bddb5a6f0a2da291742b008251d67a7e6329f53bad9a02ca",
+   "sha256": "dc20d74966fdeda3cfccb627bf37647b812d9f7043ddd6571584e2af5f050f10",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool graphics runs: ImageMagick for resizing, cropping and comparing images, resvg for SVG to PNG, and oxipng, pngquant and cwebp for shrinking what an app ships.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Graphics tools (ImageMagick, resvg, oxipng, pngquant, cwebp)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "media"
    ],
@@ -387,17 +471,21 @@
   {
    "name": "diagrams",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/diagrams",
-   "sha256": "60a6ef9c8637211060e52070b6c6a67b16c646f29259cf583dedc4c194035b00",
+   "sha256": "52494bd9b284c513610bfbc771b7049ed47aec00163377a486ec891fe065fb03",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool diagrams runs: PlantUML and Mermaid, diagrams drawn from text. Needs jdk and playwright beside it.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Diagram renderers (PlantUML, Mermaid)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "documents"
    ],
@@ -406,17 +494,21 @@
   {
    "name": "documents",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/documents",
-   "sha256": "4ac8654c9c352e139397e12140ed7aa4f4984d8222732294ea43f6f966d08a7b",
+   "sha256": "357a1f1e72b455939be95689e9c215df15f670561d3495e656ddd02b08f66296",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool docs runs: reads a PDF, Word document, slide deck or spreadsheet as Markdown, draws a PDF's pages as pictures, and converts with pandoc. Also lets Claude Code read PDFs. About 650 MB.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Document readers (markitdown, PyMuPDF, pandoc)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "documents"
    ],
@@ -425,17 +517,21 @@
   {
    "name": "office",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/office",
-   "sha256": "e460f3d6bf4a6a09685b5c0ed3e956a074613fb10e586b961bb6228981cd4398",
+   "sha256": "cd600069f968984a3a119b999e2ba33241aa66d182eaa9563bf083d6aa635a85",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool office runs: LibreOffice without a window, to turn documents, decks and spreadsheets into PDFs. About 750 MB.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "LibreOffice, headless",
    "maker": "The Document Foundation",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "documents"
    ],
@@ -444,17 +540,21 @@
   {
    "name": "ftp",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/ftp",
-   "sha256": "5b4788b9fb0e3b582a0537a1d6b6a1daf8af8fcb22eafa2d3630757dae88dc7b",
+   "sha256": "24b06d5e9d3f21f3bc5035c52dcdd6dda85c2c07014096d3b4c3d863c38e860c",
    "tier": "official",
    "withdrawn": false,
    "about": "The server behind a project's File access setting: FTPS on the project's node, where people sign in with their own AerieOS name and password. About 60 MB.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "File access server (FTPS)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "files",
     "network"
@@ -464,9 +564,9 @@
   {
    "name": "language-servers",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/language-servers",
-   "sha256": "16900205fd24c061c59d849796311858e5845203a85a2f47db78076cb8286145",
+   "sha256": "adfda63014535c4c6b3fdad9bb605a52ffdbe59c20f37837a2de4f5b0caec982",
    "tier": "official",
    "withdrawn": false,
    "about": "Python and TypeScript language servers, so a session sees type errors as it edits rather than at the next build.",
@@ -474,8 +574,12 @@
     "linux/*",
     "darwin/*"
    ],
+   "format": 5,
+   "label": "Language servers (Python, TypeScript)",
    "maker": "AerieOS",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "devtools"
    ],
@@ -484,9 +588,9 @@
   {
    "name": "kotlin-lsp",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/kotlin-lsp",
-   "sha256": "3f976210ac1b88db1f92b4de310e52ff334a870b6a7e52a582d81eaf22f15fca",
+   "sha256": "47429298a834501a3635f388d40c5de35cfecd4d3391c4596d148a6412efc18d",
    "tier": "official",
    "withdrawn": false,
    "about": "JetBrains' Kotlin language server, so a session sees Kotlin errors as it edits. Carries its own Java.",
@@ -494,8 +598,12 @@
     "linux/amd64",
     "linux/arm64"
    ],
+   "format": 5,
+   "label": "Kotlin language server",
    "maker": "JetBrains",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "devtools"
    ],
@@ -504,17 +612,22 @@
   {
    "name": "rust",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/rust",
-   "sha256": "3be6df552234bada862dff172b5d1d50c1de02abab8ddfdd9f1a6cfb0de6794b",
+   "sha256": "4c33d58881a6b5fd02885f3b23bd12a3098999e1ea9659db45cc7f83166c2ff1",
    "tier": "official",
    "withdrawn": false,
    "about": "rustup, cargo and the stable toolchain. Building for Windows also needs a linker: mingw, or zig with cargo-zigbuild.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Rust",
    "maker": "The Rust Project",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "installer",
+   "online": "rustup downloads the stable toolchain from static.rust-lang.org and checks each file against its channel's list",
+   "shipped_rev": 2,
    "topics": [
     "languages"
    ],
@@ -532,8 +645,10 @@
    "platforms": [
     "linux/amd64"
    ],
+   "label": "Swift",
    "maker": "Apple",
    "framework": "2.1",
+   "held": "pinned",
    "topics": [
     "languages",
     "mobile"
@@ -543,17 +658,21 @@
   {
    "name": "zig",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/zig",
-   "sha256": "625f3bad0931aaab80a3a8d53120e9d00b93d2fe314117d5609147c4d976e1f7",
+   "sha256": "74827d57492a1ea155a9a458300c2e69425c0fc788e79e1d8b348a2e0aadfe17",
    "tier": "official",
    "withdrawn": false,
    "about": "Zig, and a C and C++ cross-compiler (zig cc) for Windows, macOS and Linux; it also links Rust for those.",
    "platforms": [
     "linux/amd64"
    ],
+   "format": 5,
+   "label": "Zig",
    "maker": "Zig Software Foundation",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "languages"
    ],
@@ -562,17 +681,21 @@
   {
    "name": "xcodes",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/official/xcodes",
-   "sha256": "b3566461ecb35d81fea0712af364d0965d1e0442cb97583adadd5efd73166984",
+   "sha256": "28ba925e76d77778b5019e03dd7175c0723e9443bfef7f521b3307eb91c3fb55",
    "tier": "official",
    "withdrawn": false,
    "about": "Installs and switches Xcode versions on a Mac: run xcodes install --latest on the node, with an Apple ID the first time.",
    "platforms": [
     "darwin/*"
    ],
+   "format": 5,
+   "label": "xcodes (Xcode installer)",
    "maker": "XcodesOrg",
-   "framework": "2.1",
+   "framework": "5.1",
+   "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "mobile",
     "devtools"
@@ -582,18 +705,22 @@
   {
    "name": "claude",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/agents/claude",
-   "sha256": "9e8bfe5d1c3116891b197be91d4ee240ccdf651aa4b113ad339dcbb00796680a",
+   "sha256": "50ab4445a0b89614382e663a439dba3c29ac022f553c7b9c59fb8bbe7c7e3e45",
    "tier": "official",
    "withdrawn": false,
    "about": "Claude Code, run by sessions as claude",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Claude",
    "maker": "Anthropic",
-   "framework": "2.2",
-   "install_rev": 1,
+   "framework": "5.2",
+   "held": "installer",
+   "online": "Its installer downloads the Claude Code program for this machine from downloads.claude.ai and checks it against the sha256 that release's manifest states; the program then sets up its own launcher.",
+   "install_rev": 2,
    "topics": [
     "ai"
    ],
@@ -602,18 +729,22 @@
   {
    "name": "codex",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/agents/codex",
-   "sha256": "b45706b04fa8f74b6c8445c8eac57a0e9df9eac534ed86195395ad1348e654aa",
+   "sha256": "921c14fa2ec2769130e583dbd6b7aa0b99e4a1a7f703c261f43b409ab6305dc3",
    "tier": "official",
    "withdrawn": false,
    "about": "Codex CLI, run by sessions as codex",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "ChatGPT",
    "maker": "OpenAI",
-   "framework": "2.2",
-   "install_rev": 1,
+   "framework": "5.2",
+   "held": "installer",
+   "online": "Its installer downloads the Codex CLI package for this machine from releases.openai.com or github.com/openai/codex's releases, and checks it against the sha256 GitHub states for that release.",
+   "install_rev": 2,
    "topics": [
     "ai"
    ],
@@ -622,18 +753,21 @@
   {
    "name": "copilot",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/agents/copilot",
-   "sha256": "b6418b904accfe619f718703f4e769fce87abbbf17c82097b27f965d6e5d9159",
+   "sha256": "3e42368e42a6600f167c538f8142cdeb37e46b960ea08eabe9aecd51c6f9fca4",
    "tier": "official",
    "withdrawn": false,
    "about": "Copilot CLI, run by sessions as copilot",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Copilot",
    "maker": "GitHub",
-   "framework": "2.2",
-   "install_rev": 1,
+   "framework": "5.2",
+   "held": "pinned",
+   "install_rev": 2,
    "topics": [
     "ai"
    ],
@@ -642,18 +776,21 @@
   {
    "name": "grok",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/agents/grok",
-   "sha256": "4facb36d3a29ee98e7c5ba83f289e49e19cd7869523f8de5d645b14a49867431",
+   "sha256": "8d9e4a0b214f53486a0e5d3314479e6b267cca721928a569a50d8c6418927a8e",
    "tier": "official",
    "withdrawn": false,
    "about": "Grok Build, run by sessions as grok",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Grok",
    "maker": "xAI",
-   "framework": "2.2",
-   "install_rev": 1,
+   "framework": "5.2",
+   "held": "pinned",
+   "install_rev": 2,
    "topics": [
     "ai"
    ],
@@ -662,18 +799,22 @@
   {
    "name": "open",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/agents/open",
-   "sha256": "a5a0918533a76be5ed4f899d535044a39cc19f937224e64dc5450a3210c44e9f",
+   "sha256": "68e14eb8c1e89e6646259f33f7168ce49b39fcc847613f2c91ec9335cd2ca031",
    "tier": "official",
    "withdrawn": false,
    "about": "OpenCode, run by sessions as opencode",
    "platforms": [
     "linux/*"
    ],
+   "format": 5,
+   "label": "Any model",
    "maker": "Anomaly",
-   "framework": "2.1",
-   "install_rev": 1,
+   "framework": "5.1",
+   "held": "installer",
+   "online": "Its installer downloads the OpenCode build for this machine from github.com/anomalyco/opencode's releases, and checks it against nothing.",
+   "install_rev": 2,
    "topics": [
     "ai"
    ],
@@ -681,10 +822,11 @@
   },
   {
    "name": "model-router",
+   "kind": "service",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/services/model-router",
-   "sha256": "d225b91c4550e2dc007388cdaa3d203db74023e6f0e76e8e9de174063d643cf5",
+   "sha256": "9317fe64a97a82a97481a5d7fcc049354f538c7e8f42a585938361be39cc41b6",
    "tier": "official",
    "withdrawn": false,
    "about": "LiteLLM on this node holding your provider keys, Ollama beside it where you turn it on, offered to the spaces you allow: each is handed its address and a key of its own at a session's start, so its spend is its own. What Start's Any model runs through.",
@@ -692,9 +834,11 @@
     "linux/amd64",
     "linux/arm64"
    ],
+   "format": 5,
+   "label": "Model router",
    "maker": "AerieOS",
-   "framework": "2.1",
-   "kind": "service",
+   "framework": "5.1",
+   "held": "pinned",
    "topics": [
     "ai",
     "network"
@@ -702,12 +846,61 @@
    "added": "2026-11-11"
   },
   {
+   "name": "nginx",
+   "kind": "service",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/services/nginx",
+   "sha256": "2a8ad9b6699af56dfcc3f4f24b9523283812bfb9301717351c4e62d7d33830ac",
+   "tier": "official",
+   "withdrawn": false,
+   "about": "nginx on this node in front of its containers: a hostname routed to a container's port, with a certificate of your own or one from Let's Encrypt kept renewed. Its routes and certificates are on its own page, opened from Installed.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "maker": "AerieOS",
+   "framework": "5.1",
+   "held": "pinned",
+   "topics": [
+    "web",
+    "network"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "scanners",
+   "kind": "service",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/services/scanners",
+   "sha256": "c0ac2a1030356740636ceaae2f0de5265843cb9bb965abfe0e3e561e77b5deda",
+   "tier": "official",
+   "withdrawn": false,
+   "about": "The scanners on this node, run over the spaces it holds on a schedule or when asked: what each found is on the space's notebook. Their schedule and their runs are on their own page, opened from Installed.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Scanners",
+   "maker": "AerieOS",
+   "framework": "5.1",
+   "held": "pinned",
+   "topics": [
+    "security",
+    "devtools"
+   ],
+   "added": "2026-11-20"
+  },
+  {
    "name": "whoami",
    "kind": "app",
    "url": "https://github.com/aquilaelabs/builderbot-catalog",
-   "commit": "e91a0d2ef21136f9c2e1b21b4f41c982ed54bd0f",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/apps/whoami",
-   "sha256": "86a29aa8aad0e02925661034249d90b52599ed9c15d5683e1415a0f85974c4ae",
+   "sha256": "95e60a420219297eccef33f233ad9c3bd5d33ad9bc432376d7e3dd2d64012da0",
    "tier": "aerie",
    "withdrawn": false,
    "about": "A tiny web server that answers with the hostname, the address and the headers of the request: the simplest container to prove a deploy with.",
@@ -715,8 +908,10 @@
     "linux/amd64",
     "linux/arm64"
    ],
+   "format": 5,
    "maker": "Traefik Labs",
-   "framework": "2.1",
+   "framework": "5.2",
+   "held": "pinned",
    "topics": [
     "web",
     "network"
@@ -727,27 +922,321 @@
    "name": "gemini",
    "agent": true,
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "e91a0d2ef21136f9c2e1b21b4f41c982ed54bd0f",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
    "path": "packs/aerie/gemini",
-   "sha256": "f23a4f0c03a53f11c8cf40a0677c11b0e241943f7863d6bf525d012cb52c758b",
+   "sha256": "98b274521d137774a869fdb3eab1f32d733f8de51fd9ece780b32d32b55bca11",
    "tier": "aerie",
    "withdrawn": false,
-   "about": "Gemini: Google's coding agent, Antigravity CLI (agy), as a session's agent, handed the briefing and held by the same guards through its own hooks. Signs in with a Google account, from its page or in its own terminal.",
+   "about": "Google's coding agent, Antigravity CLI (agy), as a session's agent beside the ones AerieOS ships: handed the briefing and held by the same guards through its own hooks. It signs in with a Google account, from its page or in its own terminal, or runs on a Gemini API key.",
    "platforms": [
     "linux/amd64",
     "linux/arm64"
    ],
-   "format": 2,
+   "format": 5,
    "label": "Gemini",
    "maker": "Google",
-   "framework": "2.1",
+   "framework": "5.2",
    "works_with": [
     "0.9"
    ],
+   "held": "pinned",
    "topics": [
     "ai"
    ],
    "added": "2026-11-11"
+  },
+  {
+   "name": "homeassistant",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/homeassistant",
+   "sha256": "4628cdd09a3c7f80281911878e29e065cca25fecc796eef7deb8ec005fc4cc71",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "Home automation. It runs on the machine's own network so it finds the devices around it, and reaches Bluetooth through the machine's dbus.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Home Assistant",
+   "maker": "Open Home Foundation",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "home"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "immich",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/immich",
+   "sha256": "1fb4b4b820599221f80c5b09565bf73be9fdb223fbaafbeb8fd8f08f84963db0",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "Photos and videos backed up from every phone, with faces, places and search, on a database and a model of its own beside it.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Immich",
+   "maker": "Immich",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "media",
+    "files"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "jellyfin",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/jellyfin",
+   "sha256": "bbe1dc81958e279c0e4b686a386a04cbfcda8ad25772a48bb836b43b59c253e2",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "A media server: films, series and music streamed to every screen, with apps for phones, televisions and browsers and no account anywhere else.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Jellyfin",
+   "maker": "Jellyfin",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "plex",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/plex",
+   "sha256": "04d89c79164e5ee1364bba57bda57f9ad651718a7305eb001d22f58172315341",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "A media server with Plex's apps and account: films, series and music on every screen. Claim it with a token from plex.tv/claim, or on its first open.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Plex",
+   "maker": "Plex",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "sonarr",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/sonarr",
+   "sha256": "23a11977669cb68d5627db72914974c53910ac4d46cb7d45ce0a07804dcf2ef3",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "Watches for the series you follow, sends each episode to a download client and files it in your library. It reaches Prowlarr and qBittorrent at this machine's address and their ports.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Sonarr",
+   "maker": "the Sonarr team",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "radarr",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/radarr",
+   "sha256": "909202d582044943a01f02baf13121e2d79a5f39053d03234737b7ad3dbceb2d",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "Watches for the films you want, sends each to a download client and files it in your library. It reaches Prowlarr and qBittorrent at this machine's address and their ports.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Radarr",
+   "maker": "the Radarr team",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "prowlarr",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/prowlarr",
+   "sha256": "4b6eb303b30fe8443d4915010672b625682af164533a83d211d3989756e97e4b",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "Keeps the indexers Sonarr and Radarr search, in one place, and hands them to each at its address on this machine and its port.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Prowlarr",
+   "maker": "the Prowlarr team",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "seerr",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/seerr",
+   "sha256": "cdbd07ba5f85279d4479e0478d8adb4a9eececfc99aebe9949f2c2f46130cada",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "The request page for a media library: a person asks for a film or a series and it goes to Radarr or Sonarr. It reaches them and Jellyfin or Plex at this machine's address.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Seerr",
+   "maker": "the Seerr team",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "media"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "nextcloud",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/nextcloud",
+   "sha256": "296a92ce2b9e85e42760787a4bcd993da3c201e9984798674ba6b85e7fb8a0d9",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "Files, calendars and contacts with its apps, on a database of its own. Its admin account is made as it first starts.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Nextcloud",
+   "maker": "Nextcloud",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "files",
+    "productivity"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "paperclip",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/paperclip",
+   "sha256": "d08471510bfece2c843082a3b75cc65b161e74f436f6adcbf98dea61fbaa308d",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "A company of AI agents as an org chart, each with a role, a budget and approvals, on the model router's key. AerieOS's guards do not reach its agents: its container and its own budgets do.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Paperclip",
+   "maker": "Paperclip Labs",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "ai",
+    "productivity"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "qbittorrent",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/qbittorrent",
+   "sha256": "48e2fd419b845f9f6b32ec8977db27532d1bdc178ed81edb7f6e2f8b3a4700ce",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "A download client with a web page. Its first password is in its log; change it on its first open.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "qBittorrent",
+   "maker": "the qBittorrent project",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "files",
+    "network"
+   ],
+   "added": "2026-11-20"
+  },
+  {
+   "name": "syncthing",
+   "kind": "app",
+   "url": "https://github.com/aquilaelabs/aerieos-catalog",
+   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "path": "packs/apps/syncthing",
+   "sha256": "f9c05b4f4f04367f3cf84dfe7e1441ca2b701eeb5aa98481d90b6b3f19ca415d",
+   "tier": "aerie",
+   "withdrawn": false,
+   "about": "Folders kept the same between this machine and others, with no cloud between them.",
+   "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+   ],
+   "format": 5,
+   "label": "Syncthing",
+   "maker": "Syncthing Foundation",
+   "framework": "5.2",
+   "held": "pinned",
+   "topics": [
+    "files",
+    "network"
+   ],
+   "added": "2026-11-20"
   }
  ]
 }
