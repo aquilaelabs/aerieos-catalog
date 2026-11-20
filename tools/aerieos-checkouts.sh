@@ -14,12 +14,16 @@
 # it says so, prints nothing and ends 3, so what reads its words is handed
 # none and says the same (catalog-check.py fails with no AerieOS named).
 #
+# The list read is this catalog's, or CATALOG_ROOT's: how the sign workflow
+# runs main's copy of this script over the branch it signs, as the check and
+# the signing tool are run.
+#
 # The checkouts are kept outside this tree, under the account's cache
 # (AERIEOS_CHECKOUTS names another place): thousands of files that are not
 # the catalog's, which a tree that is synced or watched should not carry.
 set -euo pipefail
 
-here="$(cd "$(dirname "$0")/.." && pwd)"
+here="${CATALOG_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 repo="${AERIEOS_REPO:-https://github.com/aquilaelabs/aerieos}"
 keep="${AERIEOS_CHECKOUTS:-${XDG_CACHE_HOME:-$HOME/.cache}/aerieos-catalog/checkouts}"
 

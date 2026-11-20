@@ -449,7 +449,7 @@ class Release(unittest.TestCase):
 
     def test_a_format_the_release_does_not_read(self):
         self.reads(4)
-        code, out = self.run_tool("v0.9.0-dev.5700")
+        code, _ = self.run_tool("v0.9.0-dev.5700")
         self.assertIn("pack format 5, which AerieOS 0.9.0-dev.5700 does not read", str(code))
         self.assertIn("nothing was written", str(code))
         self.assertEqual((self.ar.listed(), json.dumps(self.now(), indent=1) + "\n"), ([], self.text))

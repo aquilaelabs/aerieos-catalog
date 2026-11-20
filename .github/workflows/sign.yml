@@ -19,13 +19,16 @@
 # installed, in a job of its own that holds no secret, and the signing job
 # signs the very commit that job checked.
 #
-# Every entry is held to each AerieOS release still supported
-# (aerieos-releases, main's). aerieos_ref names one more branch or tag to
-# hold them to, for an index that pins an entry written in a pack format no
-# release reads yet: signed on a branch, an install running that AerieOS can
-# be pointed at the branch to try it. main's own check names the releases
-# alone, so such an index is merged once a release that reads the format is
-# out and listed.
+# Every entry is held to each AerieOS release the catalog serves
+# (aerieos-releases, the branch's own: listing a release is part of what is
+# signed). aerieos_ref names one more branch or tag to hold them to, for an
+# index that pins an entry written in a pack format no release reads yet:
+# signed on a branch, an install running that AerieOS can be pointed at the
+# branch to try it. main's own check names the releases alone, so such an
+# index is merged once a release that reads the format is out and listed.
+# With no release listed and no aerieos_ref the run fails and says so; and
+# an index whose formats does not say which AerieOS first reads a pack
+# format it uses is not signed (tools/aerieos-release.py TAG writes it).
 name: sign
 on:
   workflow_dispatch:
@@ -107,7 +110,11 @@ jobs:
             echo "main's tools do not read another tree yet: this run uses the branch's own"
             tools=branch/tools
           fi
-          mapfile -t releases < <("${tools}/aerieos-checkouts.sh" "${AERIEOS_REF}")
+          # The releases the branch lists, with the checkouts made by main's
+          # copy of the script, into a file first: a release that cannot be
+          # fetched, or none listed and none named, ends the run here.
+          CATALOG_ROOT="${PWD}/branch" "${tools}/aerieos-checkouts.sh" "${AERIEOS_REF}" > "${RUNNER_TEMP}/releases"
+          mapfile -t releases < "${RUNNER_TEMP}/releases"
           # ...and whose each entry is that the branch moved: nothing that
           # crosses owners is signed.
           CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-check.py" "${releases[@]}" --whose-from origin/main --run-installs
