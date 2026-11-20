@@ -10,8 +10,8 @@
    "help": "its own folder, which holds its database and settings"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "Prowlarr",
  "license": {
   "label": "GPL-3.0 (Prowlarr/Prowlarr)",

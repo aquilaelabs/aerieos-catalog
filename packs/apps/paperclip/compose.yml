@@ -1,7 +1,7 @@
 services:
   paperclip:
     # Release v2026.1106.0: the image publishes a tag per commit, not per version.
-    image: ghcr.io/paperclipai/paperclip:sha-d69631b
+    image: ghcr.io/paperclipai/paperclip:sha-d69631b@sha256:d6584f05cf57a4b26c117eb083725f18c1fe69ddafa7d16c9f8cce83f6fa17da
     restart: unless-stopped
     environment:
       USER_UID: ${PUID}

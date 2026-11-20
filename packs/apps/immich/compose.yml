@@ -1,6 +1,6 @@
 services:
   immich-server:
-    image: ghcr.io/immich-app/immich-server:v1.131.3
+    image: ghcr.io/immich-app/immich-server:v1.131.3@sha256:7e5b6729b12b5e5cc5d98bcc6f7c27f723fabae4ee77696855808ebd5200bbf8
     restart: unless-stopped
     environment:
       TZ: ${TZ}
@@ -18,15 +18,15 @@ services:
       - redis
       - database
   immich-machine-learning:
-    image: ghcr.io/immich-app/immich-machine-learning:v1.131.3
+    image: ghcr.io/immich-app/immich-machine-learning:v1.131.3@sha256:d6f07b454c0ec7e4ba3a5926fff2482f8fd1a9922b489122dec33b11a4f37bdd
     restart: unless-stopped
     volumes:
       - ${DATA}/model-cache:/cache
   redis:
-    image: docker.io/valkey/valkey:8-bookworm
+    image: valkey/valkey:8-bookworm@sha256:fea8b3e67b15729d4bb70589eb03367bab9ad1ee89c876f54327fc7c6e618571
     restart: unless-stopped
   database:
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0@sha256:c570d9e1c2494f65d2a0a379a7f6df66e8441964254a30aa62cc58e8ebf1dee0
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}

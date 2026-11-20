@@ -19,8 +19,8 @@
    "help": "the share's folder finished downloads go to"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "qBittorrent",
  "license": {
   "label": "GPL-2.0-or-later (qbittorrent/qBittorrent)",

@@ -25,8 +25,8 @@
    "help": "its database's own, made for it when left empty"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "Immich",
  "license": {
   "label": "AGPL-3.0 (immich-app/immich)",

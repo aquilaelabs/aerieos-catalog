@@ -1,6 +1,6 @@
 services:
   syncthing:
-    image: syncthing/syncthing:1.29.6
+    image: syncthing/syncthing:1.29.6@sha256:82e1abb0307008263b8287813a4367efee9db4f877759f8d41f0485ce2658e90
     restart: unless-stopped
     environment:
       PUID: ${PUID}

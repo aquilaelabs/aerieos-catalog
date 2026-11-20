@@ -17,8 +17,8 @@
    "help": "the share's folder its series and the downloads it imports are in"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "Sonarr",
  "license": {
   "label": "GPL-3.0 (Sonarr/Sonarr)",

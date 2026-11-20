@@ -19,8 +19,8 @@
    "help": "the films, series and music it serves; read-only to it"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "Jellyfin",
  "license": {
   "label": "GPL-2.0 (jellyfin/jellyfin)",

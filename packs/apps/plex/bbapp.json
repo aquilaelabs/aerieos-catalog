@@ -26,8 +26,8 @@
    "help": "from plex.tv/claim, good for four minutes, to tie it to your Plex account as it starts; or leave it empty and claim it on its first open"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "Plex",
  "license": {
   "label": "Plex Media Server: proprietary, under Plex's terms of service",

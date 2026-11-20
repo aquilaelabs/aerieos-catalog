@@ -44,8 +44,8 @@
    "help": "signs approvals of the tools that wait for one; made for it when left empty"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "Paperclip",
  "license": {
   "label": "MIT (paperclipai/paperclip)",

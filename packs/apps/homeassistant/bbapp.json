@@ -11,8 +11,8 @@
    "help": "its own folder, which holds its configuration, automations and history"
   }
  ],
- "format": 4,
- "framework": "4.2",
+ "format": 5,
+ "framework": "5.2",
  "label": "Home Assistant",
  "license": {
   "label": "Apache-2.0 (home-assistant/core)",
