@@ -1,0 +1,206 @@
+# The job that proposes moved pins. An install never asks a vendor what is
+# newest: it takes the pin its entry carries. So a newer version arrives as
+# a change to the catalog, and this is what proposes it, once a day and by
+# hand: AerieOS's tools/pins.py asks each pack how its own entry says a
+# newer pin is found (a download's track and found, a recipe's resolver, a
+# registry for an image's tag), and where something would move the job
+# moves it, writes the entries of the folders that changed again, and opens
+# a pull request that says what moved from what to what.
+#
+# It proposes and nothing more. It holds no signing key and never signs:
+# index.sig on its branch is the earlier index's, and a maintainer reviews
+# the pull request, runs the sign workflow for its branch, and merges.
+#
+# Two jobs, so that nothing that reads the network holds a token that can
+# write. `look` has read access alone: it runs the pin tool, which downloads
+# files to hash them and runs uv and npm as resolvers, makes the two commits
+# (the packs, then the index that pins that commit) and hands them on as a
+# git bundle. `propose` can push a branch and open a pull request, and runs
+# git and gh alone: it takes the bundle as data, holds it to what a proposal
+# may touch (packs/ and index.json, on top of main), and pushes it.
+#
+# The pin tool is AerieOS's own, at the newest release aerieos-releases
+# lists. With no release listed the job says so and does nothing.
+name: pins
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pins
+  cancel-in-progress: false
+jobs:
+  look:
+    runs-on: ubuntu-24.04
+    outputs:
+      moved: ${{ steps.commits.outputs.moved }}
+      branch: ${{ steps.commits.outputs.branch }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: AerieOS at the newest release the catalog serves
+        id: aerieos
+        run: |
+          set -euo pipefail
+          code=0
+          tools/aerieos-checkouts.sh > "${RUNNER_TEMP}/releases" || code=$?
+          if [ "${code}" = 3 ]; then
+            echo "no AerieOS release is listed yet (aerieos-releases): name one with tools/aerieos-release.py TAG. Nothing is proposed."
+            echo "dir=" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          [ "${code}" = 0 ] || exit "${code}"
+          mapfile -t releases < "${RUNNER_TEMP}/releases"
+          # The list is oldest first: the last pair is the newest release.
+          newest="${releases[-1]}"
+          echo "the pin tool is AerieOS ${newest%%=*}'s"
+          echo "dir=${newest#*=}" >> "${GITHUB_OUTPUT}"
+      - name: The resolver a pip lock is resolved by, pinned
+        if: steps.aerieos.outputs.dir != ''
+        run: |
+          set -euo pipefail
+          python3 -m venv "${RUNNER_TEMP}/resolvers"
+          "${RUNNER_TEMP}/resolvers/bin/pip" install --require-hashes --no-deps -r tools/pins-requirements.txt
+          echo "${RUNNER_TEMP}/resolvers/bin" >> "${GITHUB_PATH}"
+      - name: What would move
+        id: check
+        if: steps.aerieos.outputs.dir != ''
+        env:
+          AERIEOS: ${{ steps.aerieos.outputs.dir }}
+        run: |
+          set -euo pipefail
+          code=0
+          python3 "${AERIEOS}/tools/pins.py" --catalog . check || code=$?
+          # 0: nothing would move. 3: something would. Anything else is an error.
+          case "${code}" in
+            0) echo "nothing would move: nothing is proposed"; echo "moves=" >> "${GITHUB_OUTPUT}" ;;
+            3) echo "moves=1" >> "${GITHUB_OUTPUT}" ;;
+            *) exit "${code}" ;;
+          esac
+      - name: Move the pins, and write the entries of the folders that changed
+        id: commits
+        if: steps.check.outputs.moves == '1'
+        env:
+          AERIEOS: ${{ steps.aerieos.outputs.dir }}
+        run: |
+          set -euo pipefail
+          branch="pins/$(date -u +%Y-%m-%d)"
+          said="${RUNNER_TEMP}/moved.txt"
+          # A row moves whole or stays: one that could not be learned is said
+          # and left, and the others still move, so its exit is not the job's.
+          python3 "${AERIEOS}/tools/pins.py" --catalog . move | tee "${RUNNER_TEMP}/move.txt" || true
+          # What the pull request says: what moved and what was left, without
+          # a line for each pack that had nothing to move.
+          grep -v ': nothing to move$' "${RUNNER_TEMP}/move.txt" > "${said}" || true
+          # Aerie's own packs alone: a third party's pack kept here moves by
+          # its owner's pull request, never beside these.
+          mapfile -t others < <(git status --porcelain -- packs | cut -c4- | grep -Ev '^packs/(official|agents|services|aerie|apps)/' || true)
+          for path in "${others[@]}"; do
+            echo "left as it was, for its owner to move: ${path}" | tee -a "${said}"
+            git checkout -- "${path}" 2>/dev/null || rm -rf -- "${path}"
+          done
+          mapfile -t folders < <(git status --porcelain -- packs | cut -c4- | cut -d/ -f1-3 | sort -u)
+          if [ "${#folders[@]}" = 0 ]; then
+            echo "nothing moved after all: nothing is proposed"
+            echo "moved=" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q -b "${branch}"
+          # Two commits, since an index cannot pin the commit that holds it:
+          # the packs first, then the index that pins that commit.
+          git add -- packs
+          git commit -q -m "Pins moved by the scheduled job: ${folders[*]}"
+          # Each folder that changed, by name: the entry written from its own
+          # manifest at that commit, and nothing else of the index touched.
+          python3 "${AERIEOS}/tools/packs-export.py" --catalog . --entry "${folders[@]}"
+          git add -- index.json
+          git commit -q -m "The index pins the folders the scheduled job moved"
+          # Held to the catalog's own check before it is proposed, by every
+          # release listed: the signature aside, which is the maintainers'.
+          mapfile -t releases < "${RUNNER_TEMP}/releases"
+          python3 tools/catalog-check.py "${releases[@]}" --changed-from origin/main
+          git bundle create "${RUNNER_TEMP}/pins.bundle" "origin/main..${branch}"
+          echo "moved=1" >> "${GITHUB_OUTPUT}"
+          echo "branch=${branch}" >> "${GITHUB_OUTPUT}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02   # v4.6.2, pinned by commit
+        if: steps.commits.outputs.moved == '1'
+        with:
+          name: pins
+          path: |
+            ${{ runner.temp }}/pins.bundle
+            ${{ runner.temp }}/moved.txt
+          retention-days: 3
+  propose:
+    needs: look
+    if: needs.look.outputs.moved == '1'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093   # v4.3.0, pinned by commit
+        with:
+          name: pins
+          path: ${{ runner.temp }}/pins
+      - name: The proposal, held to what one may touch, pushed and opened
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.look.outputs.branch }}
+          FROM: ${{ runner.temp }}/pins
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "${BRANCH}" | grep -Eq '^pins/[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
+            echo "not a proposal's branch: ${BRANCH}"
+            exit 1
+          fi
+          # One proposal at a time: an earlier one still open is reviewed
+          # first, and the next run proposes what is left to move.
+          open="$(gh pr list --state open --json headRefName --jq '[.[] | select(.headRefName | startswith("pins/"))] | length')"
+          if [ "${open}" != 0 ]; then
+            echo "a proposal is still open: nothing is pushed until it is merged or closed"
+            exit 0
+          fi
+          if git ls-remote --exit-code --heads origin "${BRANCH}" >/dev/null 2>&1; then
+            echo "${BRANCH} is there already: nothing is pushed over it"
+            exit 0
+          fi
+          # The bundle, as data: its commits on top of main as this job
+          # checked it out, touching packs/ and index.json and nothing else.
+          git bundle verify "${FROM}/pins.bundle"
+          git fetch -q "${FROM}/pins.bundle" "refs/heads/${BRANCH}:refs/heads/${BRANCH}"
+          if ! git merge-base --is-ancestor origin/main "${BRANCH}"; then
+            echo "main moved while the pins were looked at: nothing is pushed, the next run proposes again"
+            exit 0
+          fi
+          beside="$(git diff --name-only origin/main "${BRANCH}" | grep -Ev '^(packs/(official|agents|services|aerie|apps)/|index\.json$)' || true)"
+          if [ -n "${beside}" ]; then
+            echo "the proposal touches what a moved pin does not: ${beside}"
+            exit 1
+          fi
+          git push origin "refs/heads/${BRANCH}:refs/heads/${BRANCH}"
+          body="${RUNNER_TEMP}/body.md"
+          {
+            echo "Pins the scheduled job found moved, each from what the entry carried to what its own track finds now:"
+            echo
+            echo '```'
+            head -c 40000 "${FROM}/moved.txt"
+            echo '```'
+            echo
+            echo "Two commits: the packs, then the index that pins that commit. The catalog's check passed on them before this was opened, by every AerieOS release listed."
+            echo
+            echo "This job holds no signing key and signed nothing: index.sig here is the earlier index's. Before merging, a maintainer reads what moved, then runs the sign workflow for \`${BRANCH}\`, which checks every entry again and commits the signed index to this branch."
+            echo
+            echo "The check workflow does not start by itself on a pull request this job opens. Close and reopen it to run it here."
+          } > "${body}"
+          gh pr create --base main --head "${BRANCH}" --title "Moved pins, $(date -u +%Y-%m-%d)" --body-file "${body}"
