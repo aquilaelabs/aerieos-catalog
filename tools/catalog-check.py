@@ -25,7 +25,8 @@ their shape (packformat.older_refused), and each is checked the same way by
 every release named here that reads its format. A release that reads no
 pin of an entry passes it over, as an install of it lists nothing; an
 entry no release named here reads is a failure, since nobody could install
-it. A withdrawn entry is held to the shape alone.
+it, and so is one whose newest pin none of them reads, since nothing
+checked it. A withdrawn entry is held to the shape alone.
 
 No entry is open. What an entry fetches from somewhere else is held to
 something the entry itself carries, and its manifest reads pinned or
@@ -33,9 +34,10 @@ installer by AerieOS's own word for it (packformat.held, an app's by its
 images). One that reads open, or whose entry says no word, is refused with
 the entry named and the reason.
 
-Nothing is taken away from a release. With --changed-from REF, an entry a
-release named here could take at REF (a pin it reads, the entry not
-withdrawn) still answers that release a pin now, or is marked withdrawn:
+Nothing is taken away from a release. With --changed-from REF (or
+--whose-from REF), an entry a release named here could take at REF (a pin
+it reads, the entry not withdrawn) still answers that release a pin now,
+or is marked withdrawn:
 a pack that moves to a newer pack format keeps its older pin, and that pin
 goes only once no listed release needs it.
 
@@ -447,10 +449,11 @@ def pins_read(p, aerieos):
     return [pf.pin_for(p, f) for f in formats if f <= aerieos.reads]
 
 
-def one(checkout, changed_from, report):
+def one(checkout, changed_from, since, report):
     """Every entry held to one checkout of AerieOS: lines said as they go,
     and what was read, what was passed over and what was taken away written
-    to `report`."""
+    to `report`. `changed_from` names the index whose changed entries alone
+    are fetched; `since` the one nothing is to be taken away from."""
     aerieos = Aerieos(checkout)
     pf, reads = aerieos.packformat, aerieos.reads
     with open(INDEX, encoding="utf-8") as f:
@@ -458,7 +461,7 @@ def one(checkout, changed_from, report):
     packs = [p for p in d["packs"] if not p.get("withdrawn")]
     if changed_from:
         packs = changed(packs, changed_from)
-    bad, read, past = [], [], []
+    bad, read, past, newest = [], [], [], []
     for p in packs:
         why = pf.older_refused(p)
         if why:
@@ -476,11 +479,14 @@ def one(checkout, changed_from, report):
             print(("FAIL  " + "; ".join(said)) if said else f"ok    {what}, {pin.get('held')}")
             bad += said
         read.append(p["name"])
+        # Its newest pin is among them where this AerieOS reads that format.
+        if (pf.of(p) or 1) <= reads:
+            newest.append(p["name"])
     # Nothing is taken away from this release: what it could take at the
     # index it is compared with, it can still take.
-    gone = away(index_at(changed_from), d, reads, pf.pin_for) if changed_from else []
+    gone = away(index_at(since), d, reads, pf.pin_for) if since else []
     with open(report, "w", encoding="utf-8") as f:
-        json.dump({"reads": reads, "read": read, "past": past, "bad": bad, "away": gone}, f)
+        json.dump({"reads": reads, "read": read, "newest": newest, "past": past, "bad": bad, "away": gone}, f)
     return 1 if bad or gone else 0
 
 
@@ -497,6 +503,7 @@ def main(argv):
                     help="with --whose-from or --changed-from: install each third party's pack that differs, with no network beyond what it declares")
     ap.add_argument("--signed", action="store_true")
     ap.add_argument("--one", default="", help=argparse.SUPPRESS)
+    ap.add_argument("--since", default="", help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
     releases = listed()
     if not a.builderbot and not a.whose_from:
@@ -505,7 +512,7 @@ def main(argv):
             sys.exit(NO_RELEASE)
         ap.error("name a checkout of AerieOS with --builderbot, or --whose-from REF for whose each changed entry is alone")
     if a.one:
-        return one(a.builderbot[0], a.changed_from, a.one)
+        return one(a.builderbot[0], a.changed_from, a.since, a.one)
     if a.changed_from:
         a.changed_from = fork_of(a.changed_from)
     if a.whose_from:
@@ -536,14 +543,17 @@ def main(argv):
     # Each checkout in a process of its own: two releases' modules of one
     # name cannot be loaded side by side.
     import tempfile
-    read_by = {p["name"]: [] for p in packs}
+    read_by, newest_by = {p["name"]: [] for p in packs}, set()
     for spec in a.builderbot:
         label, _, where = spec.rpartition("=")
         label = label or os.path.basename(os.path.normpath(where))
         with tempfile.NamedTemporaryFile("r", suffix=".json") as rep:
             print(f"== AerieOS {label}", flush=True)
+            # What a change started from, for what it may not take away:
+            # the index --changed-from or --whose-from names.
+            since = a.whose_from or a.changed_from
             r = subprocess.run([sys.executable, os.path.abspath(__file__), "--builderbot", where, "--one", rep.name,
-                                *(["--changed-from", a.changed_from] if a.changed_from else [])], check=False)
+                                *(["--changed-from", a.changed_from] if a.changed_from else []), *(["--since", since] if since else [])], check=False)
             try:
                 got = json.load(rep)
             except ValueError:
@@ -551,14 +561,20 @@ def main(argv):
         problems += len(got["bad"]) + len(got["away"])
         for name in got["read"]:
             read_by.setdefault(name, []).append(label)
+        newest_by.update(got["newest"])
         for ln in got["away"]:
             print(f"FAIL  taken away from AerieOS {label}: {ln}")
         print(f"   AerieOS {label} reads pack format {got['reads']}: {len(got['read'])} read, {len(got['past'])} past it, "
               f"{len(got['bad']) + len(got['away'])} problem(s)")
-    # One no release named here reads cannot be installed by anybody.
+    # One no release named here reads cannot be installed by anybody, and a
+    # newest pin none of them reads was checked by nobody: neither is signed.
     for p in packs:
         if not read_by.get(p["name"]):
             print(f"FAIL  {p['name']} is pack format {p.get('format', 1)}, which no AerieOS named here reads: name the release that does")
+            problems += 1
+        elif p["name"] not in newest_by:
+            print(f"FAIL  {p['name']}'s newest pin is pack format {p.get('format', 1)}, which no AerieOS named here reads, so nothing here "
+                  f"checked it (its older pin was read by {', '.join(read_by[p['name']])}): name the release that reads it")
             problems += 1
     # Whose each changed entry is, and a change that crosses owners refused.
     since = a.whose_from or a.changed_from
