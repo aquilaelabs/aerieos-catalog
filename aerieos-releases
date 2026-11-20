@@ -1,10 +1,18 @@
-# The AerieOS releases the catalog still supports, one tag a line, oldest
-# first. Every entry is held to each of these that reads its pack format
+# The AerieOS releases the catalog serves, one tag a line, oldest first.
+# Every entry is held to each of these that reads a pin of it
 # (tools/catalog-check.py): the oldest install that takes an entry must take
-# it as the newest does. A new release is added here when it is out; one no
-# longer supported is taken off, and with it the promise to its installs.
-v0.9.0-dev.5173
-v0.9.0-dev.5236
-v0.9.0-dev.5269
-v0.9.0-dev.5284
-v0.9.0-dev.5341
+# it as the newest does, and nothing an install of a listed release could
+# take is taken away from it. A release is listed by tools/aerieos-release.py
+# TAG once it is out; one no longer served is taken off, and with it the
+# promise to its installs and the older pins only it needed.
+#
+# No release is listed yet. The catalog holds every download to something
+# its entry carries, in pack format 5, and the first AerieOS that reads that
+# is the oldest the catalog will ever serve: the releases before it are gone
+# from this list and nothing is owed to them. When that release is out:
+#
+#     tools/aerieos-release.py TAG
+#
+# lists it here and writes into index.json which AerieOS first reads each
+# pack format (formats). Until then every tool and workflow that needs a
+# release says that none is listed, and none of them passes for want of one.
