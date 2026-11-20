@@ -1,6 +1,7 @@
 {
  "about": "The CMake the NDK's build system uses.",
- "framework": "2.1",
+ "format": 5,
+ "framework": "5.1",
  "label": "Android CMake",
  "layout": {
   "bin": [],
@@ -16,6 +17,7 @@
   "requires": [
    "android-tools"
   ],
+  "rev": 2,
   "source": {
    "download": {
     "resolver": "android-repo",
@@ -24,6 +26,7 @@
     ]
    },
    "kind": "sdkmanager",
+   "online": "sdkmanager downloads this package from dl.google.com and checks it against Google's own listing",
    "package": "cmake",
    "versioned": true
   },
