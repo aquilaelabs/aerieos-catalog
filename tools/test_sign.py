@@ -1,5 +1,4 @@
-"""The index's date and its signature (catalog-sign.py), and the word the
-check gives an official entry (catalog-check.py).
+"""The index's date, its signature and its shape (catalog-sign.py).
 
 A signature says who made an index, never that it is the newest: an install
 orders two signed indexes by `generated` and refuses the older, so signing
@@ -94,7 +93,7 @@ class Stamp(unittest.TestCase):
         was = json.loads(self.text())
         was["packs"][0]["maker"] = "Somebody"
         was["packs"][0].update(url="https://github.com/o/r", commit="a" * 40, sha256="0" * 64, tier="vetted",
-                               withdrawn=False, platforms=["linux"])
+                               withdrawn=False, platforms=["linux"], held="pinned")
         with open(self.index, "w", encoding="utf-8") as f:
             json.dump(was, f, indent=1)
         with contextlib.redirect_stdout(io.StringIO()):
@@ -116,40 +115,68 @@ class Stamp(unittest.TestCase):
             self.cs.verify(pub)
 
 
-class OfficialWord(unittest.TestCase):
-    """An AerieOS that takes `official` from its caller is told the entry's
-    own tier; one from before it is called as it always was."""
-    SELF = "https://github.com/aquilaelabs/aerieos-catalog"
+def entry(**more):
+    return {"name": "abc", "url": "https://github.com/o/r", "commit": "a" * 40, "sha256": "0" * 64, "tier": "vetted", "withdrawn": False,
+            "about": "abc", "platforms": ["linux"], "maker": "Somebody", "held": "pinned", **more}
 
-    def entry(self, tier, path):
-        return {"name": "jdk", "url": self.SELF, "commit": "a" * 40, "sha256": "0" * 64, "tier": tier, "withdrawn": False,
-                "about": "jdk", "platforms": ["linux"], "maker": "Somebody", "path": path}
 
-    def manifest(self, tier):
-        return {"manifest": {"name": "jdk", "platforms": ["linux"], **({"tier": "official"} if tier == "official" else {})}}
+class Shape(unittest.TestCase):
+    """What the index must be before it is signed: what an entry's downloads
+    are held to, its older pins, and which AerieOS first reads each format."""
 
-    def test_a_new_aerieos_is_told(self):
-        cc, seen = load("catalog-check"), []
+    def setUp(self):
+        self.cs = load("catalog-sign")
 
-        class New:
-            @staticmethod
-            def fetch(url, commit="", shipped=(), sha256="", path="", official=False):
-                seen.append(official)
-                return self.manifest("official" if official else "url")
-        self.assertEqual(cc.check_entry(self.entry("official", "packs/official/jdk"), New, None), [])
-        self.assertEqual(cc.check_entry(self.entry("aerie", "packs/aerie/jdk"), New, None), [])
-        self.assertEqual(seen, [True, False])
+    def bad(self, *packs, formats=None, **kw):
+        return self.cs.check_index({"version": 1, "formats": formats or {}, "packs": list(packs)}, **kw)
 
-    def test_an_older_aerieos_is_called_as_before(self):
-        cc, seen = load("catalog-check"), []
+    def test_an_entry_as_the_tools_write_it(self):
+        self.assertEqual(self.bad(entry()), [])
+        self.assertEqual(self.bad(entry(held="installer", online="Its installer downloads the rest from its vendor.")), [])
+        self.assertEqual(self.bad(entry(kind="app", format=5, framework="5.2"), formats={"5": "0.9.0"}), [])
 
-        class Old:
-            @staticmethod
-            def fetch(url, commit="", shipped=(), sha256="", path=""):
-                seen.append((commit, sha256, path))
-                return self.manifest("official")
-        self.assertEqual(cc.check_entry(self.entry("official", "packs/official/jdk"), Old, None), [])
-        self.assertEqual(seen, [("a" * 40, "0" * 64, "packs/official/jdk")])
+    def test_nothing_offered_is_open_or_says_no_word(self):
+        self.assertTrue(any("held is open" in b for b in self.bad(entry(held="open"))))
+        gone = entry()
+        del gone["held"]
+        self.assertTrue(any("held is what its downloads are held to" in b for b in self.bad(gone)))
+        self.assertTrue(any("held is what its downloads are held to" in b for b in self.bad(entry(held="mostly"))))
+        # One that is withdrawn is offered to nobody: the words alone.
+        self.assertEqual(self.bad({**gone, "withdrawn": True}), [])
+        self.assertEqual(self.bad(entry(held="open", withdrawn=True)), [])
+        self.assertTrue(self.bad(entry(held="mostly", withdrawn=True)))
+
+    def test_online_is_an_installers_sentence(self):
+        self.assertTrue(any("online is an installer's own sentence" in b for b in self.bad(entry(online="It downloads the rest by itself."))))
+        self.assertTrue(any("online is an installer's own sentence" in b for b in self.bad(entry(held="installer", online="x"))))
+
+    def test_older_pins(self):
+        pin = {"format": 5, "framework": "5.2", "commit": "b" * 40, "sha256": "1" * 64, "held": "pinned"}
+        ok = entry(format=6, older=[pin, {"format": 3, "commit": "c" * 40, "sha256": "2" * 64, "held": "installer",
+                                         "online": "Its installer downloads the rest from its vendor."}])
+        self.assertEqual(self.bad(ok, formats={"3": "0.9.0", "5": "0.9.1", "6": "0.10.0"}), [])
+        for wrong, said in (([{**pin, "format": 6}], "from the newest pack format down"), ([pin, pin], "from the newest pack format down"),
+                            ([{**pin, "tier": "official"}], "which the entry says once"), ([{"format": 5}], "an older pin says its format"),
+                            ([], "older lists up to"), ("the one before", "older lists up to"), ([{**pin, "held": "open"}], "held is open"),
+                            ([{k: v for k, v in pin.items() if k != "held"}], "held is what its downloads are held to")):
+            got = self.bad(entry(format=6, older=wrong), formats={"5": "0.9.1", "6": "0.10.0"})
+            self.assertTrue(any(said in b for b in got), (wrong, got))
+
+    def test_which_aerieos_first_reads_a_format(self):
+        pin = {"format": 3, "commit": "b" * 40, "sha256": "1" * 64, "held": "pinned"}
+        d = {"version": 1, "formats": {"2": "0.9.0"}, "packs": [entry(format=5, older=[pin])]}
+        self.assertEqual(self.cs.formats_used(d), [3, 5])
+        self.assertEqual(self.cs.undated(d), [3, 5])
+        said = self.cs.check_index(d)
+        self.assertEqual(len(said), 2, said)
+        self.assertTrue(all("formats does not say which AerieOS first reads it" in b and "aerieos-release.py" in b for b in said))
+        # Before any release has a version to write there, that alone is
+        # left to the caller to say; everything else is still held.
+        self.assertEqual(self.cs.check_index(d, dated=False), [])
+        d["packs"][0]["held"] = "open"
+        self.assertTrue(self.cs.check_index(d, dated=False))
+        d["packs"][0]["held"], d["formats"] = "pinned", {"3": "0.9.0", "5": "0.9.0"}
+        self.assertEqual(self.cs.check_index(d), [])
 
 
 if __name__ == "__main__":
