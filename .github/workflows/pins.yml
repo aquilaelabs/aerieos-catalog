@@ -194,7 +194,9 @@ jobs:
             echo "Pins the scheduled job found moved, each from what the entry carried to what its own track finds now:"
             echo
             echo '```'
-            head -c 40000 "${FROM}/moved.txt"
+            # What a vendor's feed answered is in these lines: nothing of
+            # it ends the block or names an account.
+            head -c 40000 "${FROM}/moved.txt" | tr -d '`@'
             echo '```'
             echo
             echo "Two commits: the packs, then the index that pins that commit. The catalog's check passed on them before this was opened, by every AerieOS release listed."
