@@ -2,7 +2,8 @@
 """The catalog's index, signed by its maintainers (R169 step 2).
 
     tools/catalog-sign.py keygen KEYFILE         a new Ed25519 pair: the private half to KEYFILE (0600), the public half printed
-    tools/catalog-sign.py sign KEYFILE           index.json signed into index.sig
+    tools/catalog-sign.py sign KEYFILE           index.json stamped with the moment (generated) and signed into index.sig
+    tools/catalog-sign.py sign KEYFILE --as-is   signed with the date it carries, for an index stamped already
     tools/catalog-sign.py verify PUBFILE         index.sig checked against index.json with the public half
 
 The index is index.json: {"version": 1, "generated": "...", "packs": [{name, url,
@@ -11,14 +12,26 @@ commit and the sha256 of its archive at that commit, never latest. The signature
 is Ed25519 over the index's bytes; the public half ships with BuilderBot, so an
 index that was tampered with on the way is refused there. A pull request adds or
 changes an entry; a maintainer signs the index when it is merged.
+
+A signature says who made an index, never that it is the newest, so an
+install refuses one made before the one it holds, by `generated`. Signing
+therefore stamps `generated` with the moment it signs, never earlier than
+the date the index carried: two different signed indexes never carry one
+date, and a later signing is always the later index.
 """
+import calendar
 import json
 import os
+import re
 import sys
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
+# The catalog this signs: the one this file is in, or CATALOG_ROOT's, which
+# is how the sign workflow signs a branch's index with the copy of this
+# file main has (as catalog-check.py is run), so that a branch cannot change
+# the program that is handed the key.
+ROOT = os.environ.get("CATALOG_ROOT") or os.path.dirname(HERE)
 INDEX, SIG = os.path.join(ROOT, "index.json"), os.path.join(ROOT, "index.sig")
 
 
@@ -106,7 +119,43 @@ def check_index(d):
     return bad
 
 
-def sign(keyfile):
+STAMP = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def stamp(now=None):
+    """index.json's `generated` moved to this moment, and written: the date
+    an install orders two signed indexes by. Never moved back: a clock
+    behind the date the index carries leaves it one second after that date.
+    Only that value's characters change, so the file stays as whatever wrote
+    it laid it out. The stamp written."""
+    with open(INDEX, encoding="utf-8") as f:
+        text = f.read()
+    d = json.loads(text)
+    at = int(time.time() if now is None else now)
+    try:
+        was = calendar.timegm(time.strptime(str(d.get("generated")), STAMP))
+    except ValueError:
+        was = None
+    if was is not None and at <= was:
+        at = was + 1
+    said = time.strftime(STAMP, time.gmtime(at))
+    if isinstance(d.get("generated"), str):
+        new, n = re.subn(r'("generated"\s*:\s*)"[^"]*"', lambda m: m.group(1) + json.dumps(said), text, count=1)
+    else:
+        new, n = text, 0
+    want = {**d, "generated": said}
+    if n != 1 or json.loads(new) != want:
+        # No such value at the top to move (or the first one found was not
+        # the index's own): written whole, in the order it was read.
+        new = json.dumps(want, indent=1) + "\n"
+    with open(INDEX, "w", encoding="utf-8") as f:
+        f.write(new)
+    return said
+
+
+def sign(keyfile, as_is=False):
+    if not as_is:
+        print(f"index.json stamped {stamp()}")
     with open(INDEX, "rb") as f:
         data = f.read()
     bad = check_index(json.loads(data))
@@ -140,15 +189,12 @@ def main(argv):
         keygen(argv[1])
     elif len(argv) == 2 and argv[0] == "sign":
         sign(argv[1])
+    elif len(argv) == 3 and argv[0] == "sign" and argv[2] == "--as-is":
+        sign(argv[1], as_is=True)
     elif len(argv) == 2 and argv[0] == "verify":
         verify(argv[1])
     elif argv == ["stamp"]:
-        with open(INDEX, encoding="utf-8") as f:
-            d = json.load(f)
-        d["generated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        with open(INDEX, "w", encoding="utf-8") as f:
-            json.dump(d, f, indent=1, sort_keys=True); f.write("\n")
-        print("stamped")
+        print(f"stamped {stamp()}")
     else:
         sys.exit(__doc__)
 

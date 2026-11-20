@@ -19,11 +19,22 @@ kind. [Submitting a pack](#submitting-a-pack), below, is its short form.
   maintainers' key. The public half (`catalog.pub`) ships with AerieOS
   (its `config/catalog.pub`), so an index tampered with on the way is
   refused by every install.
-- `tools/catalog-sign.py`: `keygen`, `sign` and `verify`. The private half
-  is a maintainer's own and is never in this repository's files: it is kept
-  in the repository's secret `CATALOG_SIGNING_KEY`, and the `sign` workflow,
-  run by hand on the branch that holds a changed index, checks every entry,
-  signs the index with it and commits `index.sig` to that branch.
+- `tools/catalog-sign.py`: `keygen`, `sign` and `verify`. Signing stamps
+  the index's `generated` with the moment first, forward only: a signature
+  says who made an index and never that it is the newest, so an install
+  refuses one made before the one it holds, and two signed indexes never
+  carry one date. The private half is a maintainer's own and is never in
+  this repository's files: it is kept in the secret `CATALOG_SIGNING_KEY`
+  of this repository's environment `sign`, and the `sign` workflow, run by
+  hand from `main` with the branch that holds a changed index named,
+  checks every entry, stamps and signs the index and commits `index.json`
+  and `index.sig` to that branch. What is handed the key is `main`'s: the
+  workflow, the tools it runs and the library it installs
+  (`tools/sign-requirements.txt`, each file held to its sha256) are the
+  copies `main` has, the branch is read as data, and the job that holds
+  the key runs nothing of a third party's. The environment `sign` is
+  limited to `main` and needs a maintainer's approval, in the repository's
+  settings, so a run started from any other branch is given no key.
   `catalog.pub` may name a spare key on a second line: its private half is
   kept apart from that secret, an install reads an index signed by either,
   and so the first key can be lost or replaced with no install cut off.

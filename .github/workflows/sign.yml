@@ -1,61 +1,165 @@
-# The index signed by the maintainers' key, which lives only in this
-# repository's secret CATALOG_SIGNING_KEY: run by hand on the branch that
-# holds a changed index.json. Every entry is fetched at its pin and held to
-# AerieOS's own validators first, the signature is checked against the
-# public half this repository carries (catalog.pub), and index.sig is
-# committed to the branch it ran on. main is never written here: a maintainer
-# merges the branch once it is signed.
+# The index signed by the maintainers' key, which lives only in the secret
+# CATALOG_SIGNING_KEY of this repository's environment `sign`: run by hand
+# for the branch that holds a changed index.json. Every entry is fetched at
+# its pin and held to AerieOS's own validators first, the index is stamped
+# with the moment and signed, the signature is checked against the public
+# half main carries (catalog.pub), and index.json and index.sig are
+# committed to the branch that was signed. main is never written here: a
+# maintainer merges the branch once it is signed.
+#
+# What is handed the key is main's, never the branch's. Run from main, with
+# `branch` naming the branch to sign, the workflow itself and every program
+# it runs (tools/catalog-check.py, tools/catalog-sign.py, the pinned
+# library in tools/sign-requirements.txt, catalog.pub) are the copies main
+# has, and the branch is read as data: its index, its packs. The environment
+# `sign` is what holds a run to that: limited to main in this repository's
+# settings, with a maintainer as its required reviewer, a run started from
+# any other branch is given no key. The job that reads the key runs nothing
+# of a third party's: the entries are fetched, and a third party's pack
+# installed, in a job of its own that holds no secret, and the signing job
+# signs the very commit that job checked.
 #
 # Every entry is held to each AerieOS release still supported
-# (aerieos-releases). aerieos_ref names one more branch or tag to hold them
-# to, for an index that pins an entry written in a pack format no release
-# reads yet: signed on a branch, an install running that AerieOS can be
-# pointed at the branch to try it. main's own check names the releases
+# (aerieos-releases, main's). aerieos_ref names one more branch or tag to
+# hold them to, for an index that pins an entry written in a pack format no
+# release reads yet: signed on a branch, an install running that AerieOS can
+# be pointed at the branch to try it. main's own check names the releases
 # alone, so such an index is merged once a release that reads the format is
 # out and listed.
 name: sign
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: The branch whose index is signed (the one this runs on, when left empty)
+        required: false
+        default: ""
       aerieos_ref:
         description: One more AerieOS branch or tag to hold the entries to, beside the releases listed
         required: false
         default: ""
 permissions:
-  contents: write
+  contents: read
+concurrency:
+  group: sign-${{ inputs.branch || github.ref_name }}
+  cancel-in-progress: false
 jobs:
-  index:
+  check:
     runs-on: ubuntu-24.04
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+      branch: ${{ steps.which.outputs.branch }}
     steps:
-      - name: Not on main
-        if: github.ref_name == 'main'
+      - name: Which branch, and not main
+        id: which
+        env:
+          ASKED: ${{ inputs.branch }}
+          RAN_ON: ${{ github.ref_name }}
         run: |
-          echo "run this on the branch that holds the changed index, then merge it: main only ever takes a signed index"
-          exit 1
+          set -euo pipefail
+          branch="${ASKED:-${RAN_ON}}"
+          if ! printf '%s' "${branch}" | grep -Eq '^[A-Za-z0-9._/-]{1,100}$'; then
+            echo "not a branch's name: ${branch}"
+            exit 1
+          fi
+          if [ "${branch}" = main ]; then
+            echo "name the branch that holds the changed index, then merge it once it is signed: main only ever takes a signed index"
+            exit 1
+          fi
+          echo "branch=${branch}" >> "${GITHUB_OUTPUT}"
+      # The branch, as data: its index and its packs, with the whole history
+      # the check reads whose each entry is from.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ steps.which.outputs.branch }}
           fetch-depth: 0
+          path: branch
+          persist-credentials: false
+      # main's copy of the programs that check and sign.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: held
+          persist-credentials: false
+      - name: The commit that is checked is the one that is signed
+        id: commit
+        run: echo "commit=$(git -C branch rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install cryptography
+      - name: The library the check verifies signatures with, pinned
+        run: |
+          set -euo pipefail
+          req=held/tools/sign-requirements.txt
+          # Until main carries the pinned list, the branch's own.
+          [ -f "${req}" ] || req=branch/tools/sign-requirements.txt
+          pip install --require-hashes --no-deps -r "${req}"
       - name: Every entry, as each AerieOS release still supported would take it
         env:
           AERIEOS_REF: ${{ inputs.aerieos_ref }}
         run: |
           set -euo pipefail
-          mapfile -t releases < <(tools/aerieos-checkouts.sh "${AERIEOS_REF}")
+          # By the copy of the check main has, where it reads another tree
+          # (CATALOG_ROOT); a main from before that runs the branch's own,
+          # and says so.
+          tools=held/tools
+          if ! grep -q 'CATALOG_ROOT' held/tools/catalog-sign.py 2>/dev/null; then
+            echo "main's tools do not read another tree yet: this run uses the branch's own"
+            tools=branch/tools
+          fi
+          mapfile -t releases < <("${tools}/aerieos-checkouts.sh" "${AERIEOS_REF}")
           # ...and whose each entry is that the branch moved: nothing that
           # crosses owners is signed.
-          python3 tools/catalog-check.py "${releases[@]}" --whose-from origin/main --run-installs
+          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-check.py" "${releases[@]}" --whose-from origin/main --run-installs
+  sign:
+    needs: check
+    runs-on: ubuntu-24.04
+    environment: sign
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check.outputs.branch }}
+          fetch-depth: 0
+          path: branch
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: held
+          persist-credentials: false
+      - name: The branch has not moved since it was checked
+        env:
+          CHECKED: ${{ needs.check.outputs.commit }}
+        run: |
+          set -euo pipefail
+          now="$(git -C branch rev-parse HEAD)"
+          if [ "${now}" != "${CHECKED}" ]; then
+            echo "the branch moved from ${CHECKED} to ${now} while it was being checked: nothing is signed, run this again"
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The signing library, pinned, in a step that holds no secret
+        run: |
+          set -euo pipefail
+          req=held/tools/sign-requirements.txt
+          [ -f "${req}" ] || req=branch/tools/sign-requirements.txt
+          pip install --require-hashes --no-deps -r "${req}"
       - name: Sign the index
         env:
           CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
         run: |
           set -euo pipefail
           if [ -z "${CATALOG_SIGNING_KEY}" ]; then
-            echo "this repository has no secret CATALOG_SIGNING_KEY: nothing is signed"
+            echo "the environment sign holds no secret CATALOG_SIGNING_KEY for this run: nothing is signed"
             exit 1
+          fi
+          tools=held/tools
+          if ! grep -q 'CATALOG_ROOT' held/tools/catalog-sign.py 2>/dev/null; then
+            echo "main's tools do not read another tree yet: this run uses the branch's own"
+            tools=branch/tools
           fi
           key="${RUNNER_TEMP}/catalog.key"
           # The secret is the key file's one line, or the hex alone, which is
@@ -65,21 +169,24 @@ jobs:
             *) line="builderbot-catalog-ed25519-private $(printf '%s' "${CATALOG_SIGNING_KEY}" | tr -d '[:space:]')" ;;
           esac
           ( umask 077; printf '%s\n' "${line}" > "${key}" )
-          python3 tools/catalog-sign.py sign "${key}"
+          # Stamped with the moment and signed: an install orders two signed
+          # indexes by that date and refuses the older.
+          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-sign.py" sign "${key}"
           rm -f "${key}"
-          # The secret is the key this repository names, or nothing is kept.
-          python3 tools/catalog-sign.py verify catalog.pub
-      - name: Commit the signature to this branch
+          # The secret is the key main names, or nothing is kept.
+          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-sign.py" verify held/catalog.pub
+      - name: Commit the stamped index and its signature to the branch
         env:
-          BRANCH: ${{ github.ref_name }}
+          BRANCH: ${{ needs.check.outputs.branch }}
+        working-directory: branch
         run: |
           set -euo pipefail
-          if git diff --quiet -- index.sig; then
+          if git diff --quiet -- index.json index.sig; then
             echo "index.sig is already this index's signature"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.sig
-          git commit -m "The index signed by the maintainers' key (the sign workflow, run ${GITHUB_RUN_ID})"
+          git add index.json index.sig
+          git commit -m "The index stamped and signed by the maintainers' key (the sign workflow, run ${GITHUB_RUN_ID})"
           git push origin "HEAD:${BRANCH}"

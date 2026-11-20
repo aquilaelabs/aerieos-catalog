@@ -49,6 +49,7 @@ a submission can never reach past its own.
 """
 import argparse
 import importlib.util
+import inspect
 import json
 import os
 import re
@@ -316,7 +317,12 @@ def check_entry(p, toolpacks, nasapps, reads=1):
         if meta.get("maker") != p.get("maker"):
             bad.append(f"{name}: the entry says it is by {p.get('maker')!r} and its bbapp.json {meta.get('maker')!r}")
         return bad
-    got = toolpacks.fetch(url, p["commit"], (), p["sha256"], path)
+    # A manifest that says tier official is taken as that only on the
+    # caller's word (an AerieOS that reads `official`): here the entry's own
+    # tier, which the lines above hold to this repository's own folders. A
+    # release from before it takes no such word and reads the manifest's.
+    own = {"official": p["tier"] == "official"} if "official" in inspect.signature(toolpacks.fetch).parameters else {}
+    got = toolpacks.fetch(url, p["commit"], (), p["sha256"], path, **own)
     if got.get("error"):
         return [f"{name}: {got['error']}"]
     m, bad = got["manifest"], []
