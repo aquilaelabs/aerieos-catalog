@@ -86,6 +86,83 @@ class Offline(unittest.TestCase):
         self.assertIn("answered a file whose sha256 is " + self.sha, bad[0])
         self.assertIn("the manifest declares " + "0" * 64, bad[0])
 
+    def test_a_download_for_another_platform_is_left_out(self):
+        # Pack format 5: two downloads kept under one name, one a platform.
+        other = "linux/arm64" if oi.here() != "linux/arm64" else "linux/amd64"
+        rows = [{**self.declared()[0], "platform": oi.here()},
+                {"url": "file:///nowhere/tool.bin", "sha256": "0" * 64, "to": "dl/tool.bin", "platform": other}]
+        src = self.pack(fetch=rows, steps=[["sh", "{dir}/install.sh", "{dir}"]], verify=["test", "-s", "{dir}/bin/hexkit"])
+        with mock.patch.object(oi, "cut_words", lambda: ["env"]):
+            self.assertEqual(oi.run(src), [])
+        # Any architecture of this system is this machine's; another system's is not.
+        system = oi.here().split("/")[0]
+        self.assertTrue(oi.fetched_here(None) and oi.fetched_here(oi.here()) and oi.fetched_here(system + "/*"))
+        self.assertFalse(oi.fetched_here(other) or oi.fetched_here("plan9/*"))
+
+    def test_a_musl_build_is_a_musl_machines(self):
+        arch = oi.here().split("/")[1]
+        with mock.patch.object(oi, "here", lambda: f"linux/{arch}"):
+            with mock.patch.object(oi, "musl", lambda: False):
+                self.assertFalse(oi.fetched_here(f"linux-musl/{arch}"))
+                self.assertTrue(oi.fetched_here(f"linux/{arch}"))
+            with mock.patch.object(oi, "musl", lambda: True):
+                self.assertTrue(oi.fetched_here(f"linux-musl/{arch}") and oi.fetched_here("linux-musl/*"))
+                self.assertFalse(oi.fetched_here("linux-musl/other"))
+
+    def test_the_version_a_download_says_fills_its_address(self):
+        os.makedirs(os.path.join(self.root, "1.2.3"))
+        shutil.copy(self.dl, os.path.join(self.root, "1.2.3", "tool.bin"))
+        rows = [{"url": f"file://{self.root}/{{version}}/tool.bin", "version": "1.2.3", "sha256": self.sha, "to": "dl/tool.bin"}]
+        src = self.pack(fetch=rows, steps=[["sh", "{dir}/install.sh", "{dir}"]], verify=["test", "-s", "{dir}/bin/hexkit"])
+        with mock.patch.object(oi, "cut_words", lambda: ["env"]):
+            self.assertEqual(oi.run(src), [])
+
+    def test_a_download_is_held_to_exactly_one_thing(self):
+        both = {**self.declared()[0], "signed": {"sig": "file:///nowhere/tool.sig", "keys": "maker.asc"}}
+        neither = {"url": f"file://{self.dl}", "to": "dl/tool.bin"}
+        for row in (both, neither):
+            src = self.pack(fetch=[row], steps=[["true"]])
+            with mock.patch.object(oi, "cut_words", lambda: ["env"]):
+                bad = oi.run(src)
+            self.assertTrue(len(bad) == 1 and "install.fetch 1 is {url, sha256, to}" in bad[0], bad)
+
+    @unittest.skipUnless(shutil.which("gpg") and shutil.which("gpgv"), "there is no gpg and gpgv here")
+    def test_a_download_held_by_its_publishers_signature(self):
+        import subprocess
+        home = os.path.join(self.root, "gnupg")
+        os.makedirs(home, mode=0o700)
+        gpg = ["gpg", "--homedir", home, "--batch", "--quiet", "--pinentry-mode", "loopback", "--passphrase", ""]
+        made = subprocess.run([*gpg, "--quick-generate-key", "Hexkit Project <hexkit@example.org>", "ed25519", "sign", "never"], capture_output=True, check=False)
+        if made.returncode != 0:
+            self.skipTest("gpg here makes no key: " + made.stderr.decode(errors="replace")[-200:])
+        armored = subprocess.run([*gpg, "--armor", "--export"], capture_output=True, check=True).stdout.decode()
+        sig = os.path.join(self.root, "tool.bin.sig")
+        subprocess.run([*gpg, "--output", sig, "--detach-sign", self.dl], capture_output=True, check=True)
+        row = {"url": f"file://{self.dl}", "to": "dl/tool.bin", "signed": {"sig": f"file://{sig}", "keys": "hexkit.asc"}}
+        steps = [["sh", "{dir}/install.sh", "{dir}"]]
+        with mock.patch.object(oi, "cut_words", lambda: ["env"]):
+            self.assertEqual(oi.run(self.pack(fetch=[row], keyring={"hexkit.asc": armored}, steps=steps)), [])
+            # A key the manifest does not carry holds nothing.
+            bad = oi.run(self.pack(fetch=[row], steps=steps))
+            self.assertTrue(len(bad) == 1 and "is signed under hexkit.asc, which install.keyring does not carry" in bad[0], bad)
+            # Another file under the same signature is not its publisher's.
+            with open(self.dl, "wb") as f:
+                f.write(b"another tool")
+            bad = oi.run(self.pack(fetch=[row], keyring={"hexkit.asc": armored}, steps=steps))
+            self.assertTrue(len(bad) == 1 and "does not carry its publisher's signature" in bad[0], bad)
+
+    def test_an_installer_that_keeps_the_network_says_so(self):
+        # Its declared download is held all the same, and its steps then run
+        # with the network: nothing is asked to cut it.
+        def never():
+            raise AssertionError("the network is not cut for a pack that says online")
+        src = self.pack(fetch=self.declared(), online="Its installer downloads the rest from its vendor's releases.",
+                        steps=[["sh", "{dir}/install.sh", "{dir}"]], verify=["test", "-s", "{dir}/bin/hexkit"])
+        with mock.patch.object(oi, "cut_words", never):
+            self.assertEqual(oi.run(src), [])
+            bad = oi.run(self.pack(fetch=self.declared("0" * 64), online="Its installer downloads the rest from its vendor's releases.", steps=[["true"]]))
+        self.assertTrue(len(bad) == 1 and "answered a file whose sha256 is" in bad[0], bad)
+
     def test_only_https(self):
         src = self.pack(fetch=[{"url": "http://example.com/tool.bin", "sha256": self.sha, "to": "dl/tool.bin"}], steps=[["true"]])
         with mock.patch.object(oi, "cut_words", lambda: ["env"]):
