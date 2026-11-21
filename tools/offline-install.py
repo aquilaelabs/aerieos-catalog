@@ -249,9 +249,11 @@ def system_packages(product, node, name):
     if root is None:
         say(f"system   {name} names system packages this account cannot install here (it is not root and has no sudo): {' '.join(missing)}")
         return ""
-    say(f"system   {' '.join([*install, *missing])}")
+    # -- before the names, as the agent's own job hands them over: nothing
+    # a recipe names is read as an option.
+    say(f"system   {' '.join([*install, '--', *missing])}")
     try:
-        p = subprocess.run([*root, "env", "DEBIAN_FRONTEND=noninteractive", *install, *missing], capture_output=True, text=True,
+        p = subprocess.run([*root, "env", "DEBIAN_FRONTEND=noninteractive", *install, "--", *missing], capture_output=True, text=True,
                            timeout=4 * 3600 if fam == "emerge" else SYSTEM_TIMEOUT, check=False, stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError) as e:
         return f"{name}: its system packages could not be installed: {e}"

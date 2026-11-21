@@ -195,8 +195,7 @@ class Driven(Pack):
         self.pack(fetch=self.declared("0" * 64), steps=[["touch", self.mark]])
         bad = self.run_pack()
         self.assertEqual(len(bad), 1, bad)
-        self.assertIn("answered a file whose sha256 is " + self.sha, bad[0])
-        self.assertIn("declares " + "0" * 64, bad[0])
+        self.assertIn("tool.bin is not the file its entry pins", bad[0])
         self.assertFalse(os.path.exists(self.mark), "nothing of the pack ran")
 
     def test_a_download_for_another_platform_is_left_out(self):
@@ -253,7 +252,7 @@ class Driven(Pack):
         self.assertNotIn("its steps run with no network", self.said)
         self.pack(fetch=self.declared("0" * 64), online=SENTENCE, steps=[["touch", self.mark]])
         bad = self.run_pack()
-        self.assertTrue(len(bad) == 1 and "answered a file whose sha256 is" in bad[0], bad)
+        self.assertTrue(len(bad) == 1 and "is not the file its entry pins" in bad[0], bad)
         self.assertFalse(os.path.exists(self.mark))
 
     def test_a_machine_that_cannot_cut_the_network(self):
@@ -459,7 +458,9 @@ class System(Pack):
         said = os.path.join(self.root, "installed")
         tool = os.path.join(self.root, "pkg")
         with open(tool, "w", encoding="utf-8") as f:
-            f.write(f'#!/bin/sh\n[ "$1" = has ] && {{ [ "$2" = there-already ]; exit; }}\nshift\necho "$@" >> "{said}"\n')
+            # The agent ends its words with -- before the names, as a
+            # package manager takes them.
+            f.write(f'#!/bin/sh\nverb=$1; shift; [ "$1" = -- ] && shift\n[ "$verb" = has ] && {{ [ "$1" = there-already ]; exit; }}\necho "$@" >> "{said}"\n')
         os.chmod(tool, 0o755)
         self.pack(fetch=[], steps=[["true"]])
         with open(os.path.join(self.src, "bbtool.json"), encoding="utf-8") as f:
