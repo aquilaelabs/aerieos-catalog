@@ -66,6 +66,14 @@ jobs:
           # account its repository is under.
           outside=()
           if [ "${HEAD_REPO}" != "${GITHUB_REPOSITORY}" ]; then outside=(--outside "${HEAD_OWNER}"); fi
+          # What it changed is read against main as the tools were taken
+          # from it: that commit, which the pull request's checkout holds
+          # with every branch's history.
+          base="$(git -C held rev-parse HEAD)"
+          if ! git -C pr cat-file -e "${base}^{commit}" 2>/dev/null; then
+            echo "the pull request's checkout does not hold main at ${base}: nothing says what it changed, so nothing is passed"
+            exit 1
+          fi
           # The runner's own python, started with nothing of its environment
           # and no directory but the standard library's to import from.
-          CATALOG_ROOT="${PWD}/pr" python3 -I held/tools/catalog-check.py --whose-from origin/main "${outside[@]}"
+          CATALOG_ROOT="${PWD}/pr" python3 -I held/tools/catalog-check.py --whose-from "${base}" "${outside[@]}"

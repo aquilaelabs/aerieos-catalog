@@ -36,9 +36,12 @@ kind. [Submitting a pack](#submitting-a-pack), below, is its short form.
   workflow, the tools it runs and the library it installs
   (`tools/sign-requirements.txt`, each file held to its sha256) are the
   copies `main` has, the branch is read as data, and the job that holds
-  the key runs nothing of a third party's. The environment `sign` is
-  limited to `main` and needs a maintainer's approval, in the repository's
-  settings, so a run started from any other branch is given no key.
+  the key runs nothing of a third party's. A `main` that lacks one of them
+  signs nothing: the run says what is missing and ends, and never uses the
+  branch's copy in its place ([For the maintainers](#for-the-maintainers)).
+  The environment `sign` is limited to `main` and needs a maintainer's
+  approval, in the repository's settings, so a run started from any other
+  branch is given no key.
   `catalog.pub` may name a spare key on a second line: its private half is
   kept apart from that secret, an install reads an index signed by either,
   and so the first key can be lost or replaced with no install cut off.
@@ -429,10 +432,9 @@ In short:
    at its pin, checks the commit and the sha256, and reads its manifest
    with AerieOS's own readers, so it passes exactly when an install would
    take it; `whose.yml` says whose the entry is, by `main`'s rules. Run it
-   first:
+   first (python and git are all it needs):
 
    ```sh
-   pip install cryptography
    tools/aerieos-checkouts.sh > /tmp/releases
    mapfile -t releases < /tmp/releases
    python3 tools/catalog-check.py "${releases[@]}" --changed-from origin/main
@@ -454,17 +456,66 @@ settings:
 
 - **A ruleset on `main`** (or a branch protection rule) that takes changes
   by pull request only, requires review from Code Owners, and requires
-  these status checks: `whose`, and beside it `index`.
+  these status checks: `whose`, and beside it `index` and `installs`.
   `whose` is the one setting that makes the ownership rules binding. Its
   workflow runs from `main`'s copies whatever a pull request brings, but
   until `main` requires it, a pull request that fails it can still be
-  merged. `index` is the job of `check.yml`, which runs the pull request's
-  own copy of the workflow and the tools: on a pull request that changes
-  either it says what that copy says, and such a pull request is a
-  maintainer's to review under CODEOWNERS.
+  merged. `index` and `installs` are the jobs of `check.yml`, which runs
+  the pull request's own copy of the workflow and the tools: on a pull
+  request that changes either they say what that copy says, and such a
+  pull request is a maintainer's to review under CODEOWNERS.
 - **The environment `sign`**: limited to the branch `main`, a maintainer
   as its required reviewer, and the secret `CATALOG_SIGNING_KEY` in it and
   nowhere else.
 - **A branch that moves a pin of a pack kept here is merged with a merge
   commit.** Squashed or rebased, the commit the index pins is on no
   branch, and the check on `main` refuses the pin.
+
+### The first time: the tools before the index
+
+The sign workflow hands the key to `main`'s tools and to nothing else, and
+the ownership check runs `main`'s copies. There is no way round either, so
+the tools and the workflows are on `main` before the first index is signed
+with them:
+
+1. Open a pull request that brings `tools/`, `.github/`, `README.md`,
+   `CHANGELOG.md` and `aerieos-releases` to `main`, and changes none of
+   `index.json`, `index.sig`, `packs/`, `catalog.pub` and
+   `verified-vendors.json`.
+2. Its own check is red, and that is the check saying what is so:
+   `aerieos-releases` lists no release yet, so both jobs of `check` end at
+   "no AerieOS release is listed yet", since there is nothing to hold an
+   entry to. `whose` does not run on it at all: `main` has no such workflow
+   until this pull request is merged. A maintainer reads that it touches
+   none of the five files above and merges it over the red check, this
+   once. The check on `main` after the merge is red in the same words until
+   the index lands. No install is touched: an install reads `index.json`
+   and `index.sig`, which did not change.
+3. Set the ruleset and the environment above, where they are not set yet.
+
+A later change to the tools or the workflows goes the same way round: by a
+pull request of its own to `main`, before an index is signed with it.
+
+### On the day of an AerieOS release
+
+4. The release is out: its tag is on AerieOS's repository.
+5. On the branch that holds the new index, with `main` merged into it,
+   list the release (`tools/aerieos-release.py TAG`,
+   [above](#at-an-aerieos-release)), commit, push, and open the pull
+   request to `main`.
+6. Its checks run: `whose` by `main`'s rules, `index` (every entry the
+   branch changes, read as the release reads it, and the tools' own tests,
+   which fail on a runner that cannot cut the network) and `installs`.
+7. Run the sign workflow from `main`, naming the branch. Its own two jobs
+   read every entry again with `main`'s tools, every pin held to a branch
+   or a tag, and install what a third party moved; approve the environment
+   `sign` when it asks; it commits the stamped `index.json` and `index.sig`
+   to the branch.
+8. That commit starts no workflow, since the workflow's own token pushed
+   it. Close the pull request and reopen it, and the three checks run on
+   the signed commit.
+9. Merge it, with a merge commit.
+10. The check on `main` reads every entry and the signature. Green, the
+    catalog serves the release.
+
+Any later change to the index is steps 5 to 10 with no release to list.

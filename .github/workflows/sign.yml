@@ -14,10 +14,20 @@
 # has, and the branch is read as data: its index, its packs. The environment
 # `sign` is what holds a run to that: limited to main in this repository's
 # settings, with a maintainer as its required reviewer, a run started from
-# any other branch is given no key. The job that reads the key runs nothing
-# of a third party's: the entries are fetched, and a third party's pack
-# installed, in a job of its own that holds no secret, and the signing job
-# signs the very commit that job checked.
+# any other branch is given no key, and the run ends at its first step.
+#
+# The job that reads the key runs nothing of a third party's and nothing of
+# the branch's. The entries are read in a job that holds no secret (check),
+# a third party's pack is installed in another (installs), and the signing
+# job signs the very commit those two answered for.
+#
+# There is no other way in. A main whose tools cannot do this (no pinned
+# list of the library, no tool that reads another tree) signs nothing: the
+# run says what main lacks and ends, and never falls back to the branch's
+# copy of anything. So the tools and the workflows are on main before the
+# first index is signed with them (README, For the maintainers). Every
+# action is named by its full commit, and the one library is installed from
+# main's list with each file held to its sha256.
 #
 # Every entry is held to each AerieOS release the catalog serves
 # (aerieos-releases, the branch's own: listing a release is part of what is
@@ -34,9 +44,8 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: The branch whose index is signed (the one this runs on, when left empty)
-        required: false
-        default: ""
+        description: The branch whose index is signed
+        required: true
       aerieos_ref:
         description: One more AerieOS branch or tag to hold the entries to, beside the releases listed
         required: false
@@ -44,7 +53,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: sign-${{ inputs.branch || github.ref_name }}
+  group: sign-${{ inputs.branch }}
   cancel-in-progress: false
 jobs:
   check:
@@ -53,14 +62,18 @@ jobs:
       commit: ${{ steps.commit.outputs.commit }}
       branch: ${{ steps.which.outputs.branch }}
     steps:
-      - name: Which branch, and not main
+      - name: Run from main, for a branch that is not main
         id: which
         env:
           ASKED: ${{ inputs.branch }}
-          RAN_ON: ${{ github.ref_name }}
+          RAN_FROM: ${{ github.ref }}
         run: |
           set -euo pipefail
-          branch="${ASKED:-${RAN_ON}}"
+          if [ "${RAN_FROM}" != refs/heads/main ]; then
+            echo "run this workflow from main, with the branch to sign named: what is handed the key is main's copy of it, and a run from ${RAN_FROM} is given none"
+            exit 1
+          fi
+          branch="${ASKED}"
           if ! printf '%s' "${branch}" | grep -Eq '^[A-Za-z0-9._/-]{1,100}$'; then
             echo "not a branch's name: ${branch}"
             exit 1
@@ -72,14 +85,14 @@ jobs:
           echo "branch=${branch}" >> "${GITHUB_OUTPUT}"
       # The branch, as data: its index and its packs, with the whole history
       # the check reads whose each entry is from.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
         with:
           ref: ${{ steps.which.outputs.branch }}
           fetch-depth: 0
           path: branch
           persist-credentials: false
       # main's copy of the programs that check and sign.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
         with:
           ref: main
           path: held
@@ -87,55 +100,92 @@ jobs:
       - name: The commit that is checked is the one that is signed
         id: commit
         run: echo "commit=$(git -C branch rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: The library the check verifies signatures with, pinned
+      - name: main's tools are the ones that check and sign, or nothing is signed
         run: |
           set -euo pipefail
-          req=held/tools/sign-requirements.txt
-          # Until main carries the pinned list, the branch's own.
-          [ -f "${req}" ] || req=branch/tools/sign-requirements.txt
-          pip install --require-hashes --no-deps -r "${req}"
+          # No copy of the branch's stands in for one main lacks.
+          lacks=()
+          for f in catalog-check.py catalog-sign.py offline-install.py aerieos-checkouts.sh sign-requirements.txt; do
+            [ -f "held/tools/${f}" ] || lacks+=("tools/${f}")
+          done
+          grep -q 'CATALOG_ROOT' held/tools/catalog-sign.py 2>/dev/null || lacks+=("a tools/catalog-sign.py that signs another tree (CATALOG_ROOT)")
+          grep -q -- '--installs-only' held/tools/catalog-check.py 2>/dev/null || lacks+=("a tools/catalog-check.py that installs apart from reading (--installs-only)")
+          if [ "${#lacks[@]}" != 0 ]; then
+            printf 'main lacks %s\n' "${lacks[@]}"
+            echo "the key is handed to main's tools alone: land the tools and the workflows on main first (README, For the maintainers), then run this again"
+            exit 1
+          fi
       - name: Every entry, as each AerieOS release still supported would take it
         env:
           AERIEOS_REF: ${{ inputs.aerieos_ref }}
         run: |
           set -euo pipefail
-          # By the copy of the check main has, where it reads another tree
-          # (CATALOG_ROOT); a main from before that runs the branch's own,
-          # and says so.
-          tools=held/tools
-          if ! grep -q 'CATALOG_ROOT' held/tools/catalog-sign.py 2>/dev/null; then
-            echo "main's tools do not read another tree yet: this run uses the branch's own"
-            tools=branch/tools
-          fi
           # The releases the branch lists, with the checkouts made by main's
           # copy of the script, into a file first: a release that cannot be
           # fetched, or none listed and none named, ends the run here.
-          CATALOG_ROOT="${PWD}/branch" "${tools}/aerieos-checkouts.sh" "${AERIEOS_REF}" > "${RUNNER_TEMP}/releases"
+          CATALOG_ROOT="${PWD}/branch" held/tools/aerieos-checkouts.sh "${AERIEOS_REF}" > "${RUNNER_TEMP}/releases"
           mapfile -t releases < "${RUNNER_TEMP}/releases"
           # ...and whose each entry is that the branch moved: nothing that
           # crosses owners is signed. Every pin, moved or not, is held to a
-          # branch or a tag of the repository its entry names.
-          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-check.py" "${releases[@]}" --whose-from origin/main --every-pin --run-installs
-  sign:
+          # branch or a tag of the repository its entry names. No third
+          # party's code runs in this job: the installs are the next one's.
+          CATALOG_ROOT="${PWD}/branch" python3 -I held/tools/catalog-check.py "${releases[@]}" --whose-from origin/main --every-pin
+  installs:
     needs: check
+    runs-on: ubuntu-24.04
+    steps:
+      # The commit the check answered for, as data.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: ${{ needs.check.outputs.commit }}
+          fetch-depth: 0
+          path: branch
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: main
+          path: held
+          persist-credentials: false
+      - name: Each third party's pack the branch moved, installed by each release's own installer
+        env:
+          AERIEOS_REF: ${{ inputs.aerieos_ref }}
+        run: |
+          set -euo pipefail
+          CATALOG_ROOT="${PWD}/branch" held/tools/aerieos-checkouts.sh "${AERIEOS_REF}" > "${RUNNER_TEMP}/releases"
+          mapfile -t releases < "${RUNNER_TEMP}/releases"
+          # With no network beyond the downloads a pack declares and no way
+          # to root for any step of it; and nothing this job says reaches
+          # the job that signs but whether it ended well.
+          CATALOG_ROOT="${PWD}/branch" python3 -I held/tools/catalog-check.py "${releases[@]}" --whose-from origin/main --installs-only
+  sign:
+    needs: [check, installs]
     runs-on: ubuntu-24.04
     environment: sign
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.check.outputs.branch }}
-          fetch-depth: 0
-          path: branch
-      - uses: actions/checkout@v4
+      # main's copy of the programs that sign, and the library they need,
+      # before anything of the branch is here and before this job holds
+      # anything it could lose.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
         with:
           ref: main
           path: held
           persist-credentials: false
+      # The runner's own python, and main's list of the one library: each
+      # file held to its sha256, wheels alone, in a step that holds no secret.
+      - name: The signing library, pinned, from main's list
+        run: |
+          set -euo pipefail
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install --require-hashes --no-deps --only-binary :all: -r held/tools/sign-requirements.txt
+      # The branch, as data, with the one credential this job has: the
+      # token that commits the signed index to it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: ${{ needs.check.outputs.branch }}
+          fetch-depth: 0
+          path: branch
       - name: The branch has not moved since it was checked
         env:
           CHECKED: ${{ needs.check.outputs.commit }}
@@ -146,15 +196,6 @@ jobs:
             echo "the branch moved from ${CHECKED} to ${now} while it was being checked: nothing is signed, run this again"
             exit 1
           fi
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: The signing library, pinned, in a step that holds no secret
-        run: |
-          set -euo pipefail
-          req=held/tools/sign-requirements.txt
-          [ -f "${req}" ] || req=branch/tools/sign-requirements.txt
-          pip install --require-hashes --no-deps -r "${req}"
       - name: Sign the index
         env:
           CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
@@ -164,11 +205,7 @@ jobs:
             echo "the environment sign holds no secret CATALOG_SIGNING_KEY for this run: nothing is signed"
             exit 1
           fi
-          tools=held/tools
-          if ! grep -q 'CATALOG_ROOT' held/tools/catalog-sign.py 2>/dev/null; then
-            echo "main's tools do not read another tree yet: this run uses the branch's own"
-            tools=branch/tools
-          fi
+          python="${RUNNER_TEMP}/venv/bin/python"
           key="${RUNNER_TEMP}/catalog.key"
           # The secret is the key file's one line, or the hex alone, which is
           # what is left when only the second word was pasted.
@@ -177,12 +214,13 @@ jobs:
             *) line="builderbot-catalog-ed25519-private $(printf '%s' "${CATALOG_SIGNING_KEY}" | tr -d '[:space:]')" ;;
           esac
           ( umask 077; printf '%s\n' "${line}" > "${key}" )
-          # Stamped with the moment and signed: an install orders two signed
-          # indexes by that date and refuses the older.
-          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-sign.py" sign "${key}"
+          # Stamped with the moment and signed, by main's copy of the tool
+          # and no other: an install orders two signed indexes by that date
+          # and refuses the older.
+          CATALOG_ROOT="${PWD}/branch" "${python}" -I held/tools/catalog-sign.py sign "${key}"
           rm -f "${key}"
           # The secret is the key main names, or nothing is kept.
-          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-sign.py" verify held/catalog.pub
+          CATALOG_ROOT="${PWD}/branch" "${python}" -I held/tools/catalog-sign.py verify held/catalog.pub
       - name: Commit the stamped index and its signature to the branch
         env:
           BRANCH: ${{ needs.check.outputs.branch }}
