@@ -488,9 +488,11 @@ with them:
    entry to. `whose` does not run on it at all: `main` has no such workflow
    until this pull request is merged. A maintainer reads that it touches
    none of the five files above and merges it over the red check, this
-   once. The check on `main` after the merge is red in the same words until
-   the index lands. No install is touched: an install reads `index.json`
-   and `index.sig`, which did not change.
+   once. Where the ruleset on `main` is set already, it refuses that merge
+   until its enforcement status is Disabled; it goes back to Active once
+   the pull request is merged. The check on `main` after the merge is red
+   in the same words until the index lands. No install is touched: an
+   install reads `index.json` and `index.sig`, which did not change.
 3. Set the ruleset and the environment above, where they are not set yet.
 
 A later change to the tools or the workflows goes the same way round: by a
