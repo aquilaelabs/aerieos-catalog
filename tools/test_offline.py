@@ -116,14 +116,19 @@ class Pack(unittest.TestCase):
         self.addCleanup(env.stop)
 
     def stand_in(self, cuts=True):
-        """A PATH whose unshare runs a step with CUT=yes (or, with `cuts`
-        False, refuses, as on a machine that can make no namespace)."""
+        """A PATH whose unshare runs a step with CUT=yes and whose mount
+        covers /run there, as a release's installer makes its cut (or, with
+        `cuts` False, refuses, as on a machine that can make no namespace)."""
         d = os.path.join(self.root, "cutbin" if cuts else "nocutbin")
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "unshare"), "w", encoding="utf-8") as f:
             f.write('#!/bin/sh\nwhile [ $# -gt 0 ]; do case "$1" in --*) shift ;; *) break ;; esac; done\n[ $# -gt 0 ] || exit 0\nCUT=yes exec "$@"\n'
                     if cuts else "#!/bin/sh\nexit 1\n")
         os.chmod(os.path.join(d, "unshare"), 0o755)
+        if cuts:
+            with open(os.path.join(d, "mount"), "w", encoding="utf-8") as f:
+                f.write("#!/bin/sh\nexit 0\n")
+            os.chmod(os.path.join(d, "mount"), 0o755)
         # sudo answers no on the machine that cannot cut, whatever this one's would.
         if not cuts:
             with open(os.path.join(d, "sudo"), "w", encoding="utf-8") as f:
