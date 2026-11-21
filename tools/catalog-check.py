@@ -351,9 +351,15 @@ def reachable_from(url, commit, local=False):
         if made is None or made.returncode != 0:
             return f"no scratch repository could be made to look for {short} in, so nothing says it is on a branch or a tag of {url}"
         specs = ["+refs/heads/*:refs/reach/heads/*", "+refs/tags/*:refs/reach/tags/*"]
+        bare = ["--filter=tree:0"]
         for depth in (*DEPTHS, 0):
             deep = [f"--depth={depth}"] if depth else (["--unshallow"] if os.path.isfile(os.path.join(work, "shallow")) else [])
-            got = _git(["-C", work, "fetch", "-q", "--no-tags", "--no-recurse-submodules", "--filter=tree:0", *deep, "--", url, *specs], local=local)
+            fetch = ["-C", work, "fetch", "-q", "--no-tags", "--no-recurse-submodules", *bare, *deep, "--", url, *specs]
+            got = _git(fetch, local=local)
+            if bare and (got is None or got.returncode != 0):
+                # A host that sends no history without its files sends it with them.
+                bare = []
+                got = _git([a for a in fetch if a != "--filter=tree:0"], local=local)
             if got is None or got.returncode != 0:
                 said = ((got.stderr or got.stdout).strip().splitlines() if got else []) or ["git did not answer"]
                 return f"the branches and tags of {url} could not be fetched, so nothing says its pin {short} is on one: {said[-1]}"

@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SELF = "https://github.com/aquilaelabs/aerieos-catalog"
@@ -113,6 +114,21 @@ class Reachable(Scratch):
         cc.DEPTHS = (1,)
         self.assertEqual(self.reach(self.on[0]), "")
         self.assertIn("is on no branch and no tag", self.reach(self.sent))
+
+    def test_a_host_that_sends_no_history_without_its_files_is_asked_for_it_with_them(self):
+        real, asked = cc._git, []
+
+        def refusing(args, cwd=None, local=False):
+            asked.append(args)
+            if "--filter=tree:0" in args:
+                return subprocess.CompletedProcess(args, 128, "", "fatal: the remote end does not support filters")
+            return real(args, cwd, local)
+        cc.DEPTHS = (1,)
+        with mock.patch.object(cc, "_git", refusing):
+            self.assertEqual(self.reach(self.on[0]), "")
+            self.assertIn("is on no branch and no tag", self.reach(self.sent))
+        fetches = [a for a in asked if "fetch" in a]
+        self.assertTrue(any("--filter=tree:0" in a for a in fetches) and any("--filter=tree:0" not in a for a in fetches), fetches)
 
     def test_a_repository_that_cannot_be_listed_says_nothing_for_the_pin(self):
         said = cc.reachable_from("file://" + os.path.join(self.root, "nowhere"), self.on[0], local=True)
