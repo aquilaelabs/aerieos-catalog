@@ -43,6 +43,7 @@ jobs:
         env:
           BASE: ${{ github.base_ref }}
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
         run: |
           set -euo pipefail
           held="${RUNNER_TEMP}/held"
@@ -51,9 +52,11 @@ jobs:
             git show "origin/${BASE}:tools/${f}" > "${held}/${f}"
           done
           # A pull request from a fork comes from outside: it never moves
-          # one of Aerie's entries or changes a file that was here.
+          # one of Aerie's entries or changes a file that was here, and it
+          # moves an entry only where the fork's owner is the account that
+          # entry's repository is under.
           outside=()
-          if [ "${HEAD_REPO}" != "${GITHUB_REPOSITORY}" ]; then outside=(--outside); fi
+          if [ "${HEAD_REPO}" != "${GITHUB_REPOSITORY}" ]; then outside=(--outside "${HEAD_OWNER}"); fi
           if grep -q -- '--whose-from' "${held}/catalog-check.py"; then
             CATALOG_ROOT="${PWD}" python3 "${held}/catalog-check.py" --whose-from "origin/${BASE}" "${outside[@]}"
           else

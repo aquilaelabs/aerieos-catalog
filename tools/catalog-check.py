@@ -2,7 +2,7 @@
 """The vetting check: what CI runs on every pull request and every push,
 before a maintainer reviews an entry and signs the index.
 
-    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside] [--every-pin] [--run-installs] [--signed]
+    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside OWNER] [--every-pin] [--run-installs] [--signed]
 
 DIR is a checkout of AerieOS, whose own readers are the ones used, so an
 entry passes here exactly when an install would take it. Named more than
@@ -55,10 +55,14 @@ change, two owners' entries in one change, a third party's entry removed
 no new pin beyond what is the maintainers' to say (withdrawn and tier) and
 what their tools write from the manifest and this check verifies (held,
 online, older and the format fields), and anything else of this repository
-changed beside a third party's entry. --outside says the change comes from
-outside this repository (a pull request from a fork): it adds its entry, or
-moves its own, and never moves one of Aerie's or changes a file that was
-here.
+changed beside a third party's entry. --outside OWNER says the change comes
+from outside this repository, a pull request from OWNER's fork: it adds its
+entry, or moves one whose repository is under OWNER's own account, and never
+moves one of Aerie's or changes a file that was here. An entry under any
+other account (an organization's, moved by one of its members, is that) is
+moved by a maintainer on a branch of the catalog, after hearing from its
+owner. The files it adds are its new pack's, in a new folder of that
+entry's own: nothing is added to a folder that was here.
 
 A pin is on a branch or a tag. A forge answers a fetch by hash for commits
 that are on no branch of the repository asked: a pull request's against it,
@@ -171,14 +175,26 @@ def owner_of(p):
     return "/".join(parts[:4]) + "/" if len(parts) >= 4 else url
 
 
-def whose(before, after, files=(), outside=False, added=()):
+# The forge this repository is on: an account that sends a change from
+# outside is one of its accounts, and owns the repositories under its name
+# there and nowhere else.
+FORGE = "/".join(SELF[0].split("/")[:3]) + "/"
+ACCOUNT = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})")
+# A folder a submission's pack is kept in here: plain names under packs/.
+FOLDER = re.compile(r"packs(/[a-z0-9][A-Za-z0-9._-]{0,79}){1,3}")
+
+
+def whose(before, after, files=(), outside=False, added=(), account="", existed=None):
     """(lines, problems): whose each entry is that differs between two
     indexes, and every way the change crosses owners. `files` is what else
     the change touches in this repository, `added` those of them that are
     new; `outside` says the change comes from outside this repository (a
-    pull request from a fork), which never moves what was here."""
+    pull request from a fork), which never moves what was here, and
+    `account` whose fork that is. `existed(folder)` answers whether a
+    folder was here before the change."""
     was = {p.get("name"): p for p in before.get("packs", []) if isinstance(p, dict)}
     now = {p.get("name"): p for p in after.get("packs", []) if isinstance(p, dict)}
+    account = account if isinstance(account, str) and ACCOUNT.fullmatch(account) else ""
     lines, bad, ours, theirs, folders = [], [], [], {}, []
     for name in sorted(set(was) | set(now), key=str):
         a, b = was.get(name), now.get(name)
@@ -218,12 +234,45 @@ def whose(before, after, files=(), outside=False, added=()):
                 bad.append(f"{name} is Aerie's own: a change from outside this repository never moves it")
             else:
                 bad.append(f"{name} is added at tier {now[name].get('tier')}: a submission is added as vetted, and the maintainers say the rest")
-        # ...but its own pack's folder, new or moved with its entry.
-        held = sorted(f for f in files if f != "index.json" and not (f in added and f.startswith("packs/"))
-                      and not any(f.startswith(d) for d in folders if d != "/"))
+        # An entry that was here is moved from outside by the account its
+        # repository is under, and by nobody else: an address says whose a
+        # repository is, never who sends a change.
+        whom = f"{account}'s fork" if account else "a fork whose owner the check was not told"
+        for who, names in sorted(theirs.items()):
+            for name in names:
+                if name not in was or name not in now:
+                    continue
+                if who.startswith("this repository's "):
+                    bad.append(f"{name} is kept in this repository, where no account outside owns it: a maintainer moves it on a branch of the catalog "
+                               "after hearing from its owner")
+                elif not account or who.lower() != (FORGE + account + "/").lower():
+                    bad.append(f"{name}'s repository is under {who} and this change comes from {whom}: from outside, an entry is moved only from "
+                               "the fork of the account its repository is under, and for anybody else (a member of an organization the repository "
+                               "is under, an owner on another forge) a maintainer moves it on a branch of the catalog after hearing from its owner")
+        # ...and the files it adds are its new pack's, in the folder of an
+        # entry this change adds, new with it: nothing is added to a folder
+        # that was here, an entry's or not, since a folder pack's files are
+        # its archive at the next pin.
+        had = [str(p.get("path") or "").strip("/") + "/" for p in was.values() if str(p.get("url") or "").rstrip("/") in SELF and p.get("path")]
+        new = []
+        for name in sorted((n for n in now if n not in was), key=str):
+            b = now[name]
+            if not owner_of(b) or str(b.get("url") or "").rstrip("/") not in SELF:
+                continue
+            path = str(b.get("path") or "").strip("/")
+            d = path + "/"
+            if not FOLDER.fullmatch(path):
+                bad.append(f"{name} is kept in {path or 'no folder'}: a submission kept in this repository is in a folder of its own under packs/")
+            elif any(d.startswith(f) or f.startswith(d) for f in had) or (existed(d) if existed else False):
+                bad.append(f"{name} is kept in {path}, which was here before this change or is inside another pack's folder: a submission kept in "
+                           "this repository comes in a new folder of its own")
+            else:
+                new.append(d)
+        held = sorted(f for f in files if f != "index.json" and not (f in added and any(f.startswith(d) for d in new)))
         if held:
             bad.append(f"{', '.join(held[:8])}{'...' if len(held) > 8 else ''}: a change from outside this repository adds its entry to index.json, "
-                       "and its pack's own new folder under packs/ where it is kept here, and changes nothing that was here (index.sig is the maintainers')")
+                       "and its new pack's files in a new folder of that entry's own under packs/ where the pack is kept here: it changes nothing "
+                       "that was here and adds nothing to a folder that was (index.sig is the maintainers')")
     if ours and theirs:
         bad.append(f"this change moves Aerie's own entries ({', '.join(ours[:6])}{'...' if len(ours) > 6 else ''}) and a third party's "
                    f"({', '.join(n for v in theirs.values() for n in v)}): one or the other, never both")
@@ -393,6 +442,15 @@ def installs_offline(p):
         return offline.run(os.path.join(work, str(p.get("path") or "").strip("/")), "required")
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+def had_at(ref):
+    """existed(folder) for whose: whether this repository had `folder` at
+    `ref`, a file or a tree by that name."""
+    def existed(folder):
+        r = subprocess.run(["git", "-C", ROOT, "cat-file", "-e", f"{ref}:{folder.strip('/')}"], capture_output=True, check=False)
+        return r.returncode == 0
+    return existed
 
 
 def files_since(ref):
@@ -631,8 +689,8 @@ def main(argv):
     ap.add_argument("--changed-from", default="", metavar="REF")
     ap.add_argument("--whose-from", default="", metavar="REF",
                     help="say whose each entry is that differs from the index at REF, and refuse a change that crosses owners")
-    ap.add_argument("--outside", action="store_true",
-                    help="with --whose-from or --changed-from: the change comes from outside this repository (a fork's pull request)")
+    ap.add_argument("--outside", nargs="?", const="", default=None, metavar="OWNER",
+                    help="with --whose-from or --changed-from: the change comes from outside this repository, a pull request from OWNER's fork")
     ap.add_argument("--every-pin", action="store_true",
                     help="with --whose-from or --changed-from: hold every entry's pin to a branch or a tag of its repository, not only the ones that moved")
     ap.add_argument("--run-installs", action="store_true",
@@ -716,7 +774,7 @@ def main(argv):
     since = a.whose_from or a.changed_from
     if since:
         files, added = files_since(since)
-        said, crossed = whose(index_at(since), d, files, a.outside, added)
+        said, crossed = whose(index_at(since), d, files, a.outside is not None, added, a.outside or "", had_at(since))
         print(f"== whose, against {since}", flush=True)
         for ln in said or ["whose: no entry differs"]:
             print("   " + ln)

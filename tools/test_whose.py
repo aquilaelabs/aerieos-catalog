@@ -149,15 +149,14 @@ class Whose(unittest.TestCase):
         self.assertTrue(self.bad(now, ("index.json", "packs/aerie/gemini/bbtool.json")))
 
     def test_from_outside(self):
-        out = lambda now, files=("index.json",), added=(): cc.whose(BASE, now, files, True, added)[1]
-        # Its own entry added or moved, and a pack kept here in a new folder: taken.
+        out = lambda now, files=("index.json",), added=(), account="acme": cc.whose(BASE, now, files, True, added, account)[1]
+        # Its own entry added, and a pack kept here in a new folder: taken.
         now = copy.deepcopy(BASE)
         now["packs"].append(entry("new-app", "vetted", path="packs/apps/new-app", kind="app"))
         new = ("packs/apps/new-app/bbapp.json", "packs/apps/new-app/compose.yml")
         self.assertEqual(out(now, ("index.json", *new), new), [])
+        # Its own entry moved, from the fork of the account its repository is under.
         self.assertEqual(out(after(acme_cli={"commit": "b" * 40})), [])
-        # A pack kept here moves with its own folder's files.
-        self.assertEqual(out(after(kept_here={"commit": "b" * 40}), ("index.json", "packs/kept-here/bbtool.json")), [])
         # One of Aerie's moved, or an entry added as Aerie's own: never.
         self.assertTrue(any("jdk is Aerie's own" in b for b in out(after(jdk={"about": "other words"}))))
         now = copy.deepcopy(BASE)
@@ -170,6 +169,92 @@ class Whose(unittest.TestCase):
         self.assertTrue(out(copy.deepcopy(BASE), ("tools/new.py",), ("tools/new.py",)))
         # The same from inside is the maintainers' own work.
         self.assertEqual(cc.whose(BASE, after(jdk={"about": "other words"}), ("index.json", "tools/catalog-check.py"))[1], [])
+
+    def test_from_outside_an_entry_is_moved_by_its_owner_alone(self):
+        moved = after(acme_cli={"commit": "b" * 40, "sha256": "1" * 64})
+        out = lambda account, now=moved: cc.whose(BASE, now, ("index.json",), True, (), account)[1]
+        self.assertEqual(out("acme"), [])
+        # An account's name is the forge's, whatever the letters' case.
+        self.assertEqual(out("Acme"), [])
+        # Somebody else's fork: the address says whose the repository is,
+        # and nothing about who sends the change.
+        said = out("mallory")
+        self.assertEqual(len(said), 1, said)
+        self.assertIn("acme-cli's repository is under https://github.com/acme/ and this change comes from mallory's fork", said[0])
+        self.assertIn("a maintainer moves it on a branch of the catalog after hearing from its owner", said[0])
+        # An organization's pack moved by one of its members is that case,
+        # and the sentence says so.
+        self.assertIn("a member of an organization the repository is under", said[0])
+        # A name that only starts as the owner's is another account.
+        self.assertEqual(len(out("acme-labs")), 1)
+        self.assertEqual(len(out("acm")), 1)
+        # Not told whose fork it is, nobody is taken for the owner.
+        for nobody in ("", "not an account", "acme/"):
+            said = out(nobody)
+            self.assertTrue(len(said) == 1 and "a fork whose owner the check was not told" in said[0], (nobody, said))
+        # A repository on another forge has no account here to be its owner.
+        had = copy.deepcopy(BASE)
+        had["packs"].append(entry("far-tool", "vetted", url="https://gitlab.com/acme/pack"))
+        now = copy.deepcopy(had)
+        now["packs"][-1]["commit"] = "b" * 40
+        said = cc.whose(had, now, ("index.json",), True, (), "acme")[1]
+        self.assertTrue(len(said) == 1 and "far-tool's repository is under https://gitlab.com/acme/" in said[0] and "an owner on another forge" in said[0], said)
+        # What is the maintainers' to say is not an outsider's either way.
+        self.assertEqual(len(out("mallory", after(acme_cli={"withdrawn": True}))), 1)
+        # The same change from inside is a maintainer's, on a branch of the catalog.
+        self.assertEqual(cc.whose(BASE, moved, ("index.json",))[1], [])
+
+    def test_from_outside_a_pack_kept_here_is_moved_by_a_maintainer(self):
+        # No account outside owns a folder of this repository.
+        now = after(kept_here={"commit": "b" * 40})
+        for account in ("acme", "aquilaelabs", ""):
+            said = cc.whose(BASE, now, ("index.json", "packs/kept-here/bbtool.json"), True, (), account)[1]
+            self.assertTrue(any("kept-here is kept in this repository, where no account outside owns it: a maintainer moves it" in b for b in said), said)
+            self.assertTrue(any("packs/kept-here/bbtool.json" in b and "changes nothing that was here" in b for b in said), said)
+        self.assertEqual(cc.whose(BASE, now, ("index.json", "packs/kept-here/bbtool.json"))[1], [])
+
+    def test_from_outside_files_are_added_only_in_a_new_entrys_new_folder(self):
+        def out(now, files, added=None, existed=None):
+            return cc.whose(BASE, now, ("index.json", *files), True, files if added is None else added, "acme", existed)[1]
+        same = copy.deepcopy(BASE)
+        # A file added into a pack that was here, with no entry changed:
+        # it would be in that pack's archive at its next pin.
+        for f in ("packs/official/jdk/bin/git", "packs/aerie/gemini/install.sh", "packs/kept-here/extra", "packs/stray", "packs/apps/stray/compose.yml"):
+            said = out(same, (f,))
+            self.assertTrue(len(said) == 1 and f in said[0] and "adds nothing to a folder that was" in said[0], (f, said))
+        # ...or beside a new entry of its own, into somebody else's folder.
+        now = copy.deepcopy(BASE)
+        now["packs"].append(entry("new-tool", "vetted", path="packs/new-tool"))
+        mine = ("packs/new-tool/bbtool.json", "packs/new-tool/bin/run")
+        self.assertEqual(out(now, mine), [])
+        said = out(now, (*mine, "packs/official/jdk/bin/git"))
+        self.assertTrue(any("packs/official/jdk/bin/git" in b and "adds nothing to a folder that was" in b for b in said), said)
+        self.assertTrue(all("packs/new-tool/" not in b for b in said), said)
+        # A new entry whose folder is inside a pack that was here, or holds one, brings no file.
+        for path in ("packs/official/jdk/inner", "packs/official/jdk", "packs/official", "packs/kept-here/v2"):
+            now = copy.deepcopy(BASE)
+            now["packs"].append(entry("new-tool", "vetted", path=path))
+            said = out(now, (path + "/bbtool.json",))
+            self.assertTrue(any(f"new-tool is kept in {path}, which was here before this change or is inside another pack's folder" in b for b in said), (path, said))
+            self.assertTrue(any(path + "/bbtool.json" in b and "adds nothing to a folder that was" in b for b in said), (path, said))
+        # ...nor one whose folder was here already with no entry of its own.
+        now = copy.deepcopy(BASE)
+        now["packs"].append(entry("new-tool", "vetted", path="packs/waiting"))
+        f = ("packs/waiting/bin/extra",)
+        self.assertEqual(out(now, f, existed=lambda d: False), [])
+        said = out(now, f, existed=lambda d: d == "packs/waiting/")
+        self.assertTrue(any("new-tool is kept in packs/waiting, which was here before this change" in b for b in said), said)
+        self.assertTrue(any("packs/waiting/bin/extra" in b for b in said), said)
+        # ...nor one kept anywhere but a plain folder under packs/.
+        for path in ("", "tools", "packs", "packs/../tools", "packs/new-tool/../official/jdk", ".github/workflows"):
+            now = copy.deepcopy(BASE)
+            now["packs"].append(entry("new-tool", "vetted", path=path))
+            said = out(now, ((path or "x") + "/file",))
+            self.assertTrue(any("a submission kept in this repository is in a folder of its own under packs/" in b for b in said), (path, said))
+        # A file of the new folder that was here is not new: only added files are taken.
+        now = copy.deepcopy(BASE)
+        now["packs"].append(entry("new-tool", "vetted", path="packs/new-tool"))
+        self.assertTrue(out(now, ("packs/new-tool/bbtool.json",), added=()))
 
     def test_the_indexs_own(self):
         now = after(acme_cli={"commit": "b" * 40})

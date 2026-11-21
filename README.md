@@ -198,10 +198,19 @@ owners:
   `index.sig`, which the maintainers' workflow commits; the pack's own
   folder, where it is kept here) and nothing else of this repository.
 
-- A pull request from a fork comes from outside: it adds its entry (as
-  `vetted`) or moves its own, with its pack's own folder under `packs/`
-  where the pack is kept here, and never moves one of Aerie's entries or
-  changes a file that was here.
+- A pull request from a fork comes from outside. It adds its entry (as
+  `vetted`), with its new pack's files in a new folder of that entry's own
+  under `packs/` where the pack is kept here. It never moves one of Aerie's
+  entries, changes a file that was here, or adds a file to a folder that
+  was here: a folder pack's files are its archive at the next pin.
+- From outside, an entry that was here is moved only from the fork of the
+  account its repository is under. An address says whose a repository is,
+  and nothing about who sends a change, so the workflow tells the check
+  whose fork a pull request comes from. For anybody else a maintainer moves
+  the entry on a branch of the catalog, after hearing from its owner: a
+  member of an organization the repository is under, an owner whose
+  repository is on another forge, and the owner of a pack kept in this
+  repository, which no account outside owns.
 
 **A pin is on a branch or a tag.** A forge answers a fetch by hash for
 commits that are on no branch of the repository asked: a pull request
@@ -385,7 +394,10 @@ In short:
    downloads. Never change `index.sig`: it is the maintainers'.
    Your entry and nothing else: a pull request that also touches another
    owner's entry, Aerie's own, or any other file here is refused by the
-   check ([Whose an entry is](#whose-an-entry-is)).
+   check ([Whose an entry is](#whose-an-entry-is)). A later pin is the
+   same pull request again, from the fork of the account your repository
+   is under; where that is an organization, write to the maintainers and
+   one of them moves it.
 3. The vetting check (`.github/workflows/check.yml`,
    `tools/catalog-check.py`) fetches each entry the pull request changes
    at its pin, checks the commit and the sha256, and reads its manifest
