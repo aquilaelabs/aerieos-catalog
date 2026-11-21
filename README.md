@@ -225,10 +225,15 @@ commit: squashed or rebased, the commit the index pins would be on no
 branch here. The pins a change moved are held to this on every pull request
 and every push to `main`, and every pin before the index is signed.
 
-A pull request is held to the copy of the check `main` has, so it cannot
-loosen the rule it is held to; `.github/CODEOWNERS` names the maintainers
-for the signature, the key, the tools, the workflows, the verified vendors
-and Aerie's own packs.
+A pull request cannot change the rules it is held to. They run in a
+workflow of their own, `.github/workflows/whose.yml`, on
+`pull_request_target`: the workflow that runs is `main`'s copy, the check
+it runs is `main`'s copy, and the pull request's head is checked out beside
+them and read as data, with no secret and a token that only reads. It is
+binding once `main` requires it, which is a setting and not a file
+([For the maintainers](#for-the-maintainers)). `.github/CODEOWNERS` names
+the maintainers for the signature, the key, the tools, the workflows, the
+verified vendors and Aerie's own packs.
 
 ## What an install downloads
 
@@ -423,7 +428,8 @@ In short:
    `tools/catalog-check.py`) fetches each entry the pull request changes
    at its pin, checks the commit and the sha256, and reads its manifest
    with AerieOS's own readers, so it passes exactly when an install would
-   take it. Run it first:
+   take it; `whose.yml` says whose the entry is, by `main`'s rules. Run it
+   first:
 
    ```sh
    pip install cryptography
@@ -438,3 +444,27 @@ In short:
 
 A pack found wanting later is marked `withdrawn: true` in the next signed
 index, and every install that holds it says so on its bell.
+
+## For the maintainers
+
+### What the repository's settings hold
+
+Three things no file here can say. Each is set once, in the repository's
+settings:
+
+- **A ruleset on `main`** (or a branch protection rule) that takes changes
+  by pull request only, requires review from Code Owners, and requires
+  these status checks: `whose`, and beside it `index`.
+  `whose` is the one setting that makes the ownership rules binding. Its
+  workflow runs from `main`'s copies whatever a pull request brings, but
+  until `main` requires it, a pull request that fails it can still be
+  merged. `index` is the job of `check.yml`, which runs the pull request's
+  own copy of the workflow and the tools: on a pull request that changes
+  either it says what that copy says, and such a pull request is a
+  maintainer's to review under CODEOWNERS.
+- **The environment `sign`**: limited to the branch `main`, a maintainer
+  as its required reviewer, and the secret `CATALOG_SIGNING_KEY` in it and
+  nowhere else.
+- **A branch that moves a pin of a pack kept here is merged with a merge
+  commit.** Squashed or rebased, the commit the index pins is on no
+  branch, and the check on `main` refuses the pin.

@@ -1,0 +1,71 @@
+# Whose each changed entry is, by the rules main holds, on every pull
+# request: Aerie's own entries and a third party's are never moved by one
+# change, a pull request from a fork adds its entry or moves one whose
+# repository is under the fork's own account, the files it adds are its new
+# pack's in a new folder of that entry's own, and a pin that moved is on a
+# branch or a tag of the repository its entry names (catalog-check.py's
+# whose, reachable_from).
+#
+# A pull request cannot change these rules for itself. The trigger is
+# pull_request_target, so the workflow that runs is main's copy of this
+# file, and the programs it runs are main's copies of the tools, checked
+# out from main. The pull request's head is checked out beside them and
+# read as data: its index.json, the names of the files it touches, its
+# history. Nothing of it is run: no script, no action from its tree, and
+# nothing is installed from its files. The check workflow, which a pull
+# request does bring its own copy of, reads the entries and installs a third
+# party's pack; neither is what decides whose an entry is.
+#
+# The job is given no secret and a token that can read and nothing else. It
+# binds once main requires it: a ruleset or a branch protection rule on main
+# that names this job, whose, as a required status check (README, For the
+# maintainers). No file in the repository can say that.
+name: whose
+on:
+  pull_request_target:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: whose-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  whose:
+    runs-on: ubuntu-24.04
+    steps:
+      # main's copy of the tools.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: main
+          path: held
+          persist-credentials: false
+      # The pull request's head, as data, with the whole history the check
+      # reads what it changed from.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          path: pr
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Whose each changed entry is, and where each moved pin is from, by the rules main holds
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
+        run: |
+          set -euo pipefail
+          # The commit read is the one this run was started for: a pull
+          # request that moved since is answered by its own run.
+          got="$(git -C pr rev-parse HEAD)"
+          if [ "${got}" != "${HEAD_SHA}" ]; then
+            echo "the pull request moved from ${HEAD_SHA} to ${got} since this run was started: its newer run answers for it"
+            exit 1
+          fi
+          # A pull request from a fork comes from outside, and the check is
+          # told whose fork it is: an entry is moved from outside only by the
+          # account its repository is under.
+          outside=()
+          if [ "${HEAD_REPO}" != "${GITHUB_REPOSITORY}" ]; then outside=(--outside "${HEAD_OWNER}"); fi
+          # The runner's own python, started with nothing of its environment
+          # and no directory but the standard library's to import from.
+          CATALOG_ROOT="${PWD}/pr" python3 -I held/tools/catalog-check.py --whose-from origin/main "${outside[@]}"

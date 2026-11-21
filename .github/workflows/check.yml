@@ -4,10 +4,12 @@
 # reads a pin of it takes it as the newest does, when what it fetches is held
 # to something it carries (no entry is open), and when nothing a listed
 # release could take is taken away. A push to main checks every entry and
-# the maintainers' signature over the index. Either way the check says whose
-# each changed entry is and refuses a change that crosses owners
-# (catalog-check.py's whose): Aerie's own entries and a third party's are
-# never moved by one change.
+# the maintainers' signature over the index.
+#
+# Whose each changed entry is, and what a pull request from a fork may
+# touch, is not decided here: this workflow runs on pull_request, so the
+# copy that runs, and the tools it runs, are the pull request's own. The
+# whose workflow decides that, from main's copies (whose.yml).
 #
 # With no release listed there is nothing to hold an entry to, and the run
 # fails and says so: tools/aerieos-release.py TAG lists the first.
@@ -43,32 +45,6 @@ jobs:
           mapfile -t releases < "${RUNNER_TEMP}/releases"
           newest="${releases[-1]}"
           AERIEOS_CHECKOUT="${newest#*=}" python3 -m unittest discover -s tools -p 'test_*.py'
-      # By the copy of the check main has, not the pull request's own: a
-      # change cannot loosen the rule it is held to.
-      - name: whose each changed entry is, by the rules main holds
-        if: github.event_name == 'pull_request'
-        env:
-          BASE: ${{ github.base_ref }}
-          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-          HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
-        run: |
-          set -euo pipefail
-          held="${RUNNER_TEMP}/held"
-          mkdir -p "${held}"
-          for f in catalog-check.py catalog-sign.py; do
-            git show "origin/${BASE}:tools/${f}" > "${held}/${f}"
-          done
-          # A pull request from a fork comes from outside: it never moves
-          # one of Aerie's entries or changes a file that was here, and it
-          # moves an entry only where the fork's owner is the account that
-          # entry's repository is under.
-          outside=()
-          if [ "${HEAD_REPO}" != "${GITHUB_REPOSITORY}" ]; then outside=(--outside "${HEAD_OWNER}"); fi
-          if grep -q -- '--whose-from' "${held}/catalog-check.py"; then
-            CATALOG_ROOT="${PWD}" python3 "${held}/catalog-check.py" --whose-from "origin/${BASE}" "${outside[@]}"
-          else
-            echo "main's check does not say whose an entry is yet: this pull request's own does, in the next step"
-          fi
       - name: the entries a pull request changes, on every AerieOS release still supported
         if: github.event_name == 'pull_request'
         env:
