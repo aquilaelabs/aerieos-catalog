@@ -656,7 +656,10 @@ class Aerieos:
             sys.exit(f"{checkout} is an AerieOS from before an entry said what its downloads are held to (no scripts/dashboard/catalogentry.py): "
                      "the catalog serves the releases from the first that reads it, and no earlier one is listed")
         sys.path.insert(0, dash)
+        # A pack kept in this catalog is read from disk by the release's own
+        # reader, which honors that only beside the marker its tests set.
         os.environ["BB_TOOLPACKS_FILE_URLS"] = "1"
+        os.environ["BB_SEAMS"] = "1"
         import catalogentry  # noqa: PLC0415  # pyright: ignore[reportMissingImports]
         import nasapps  # noqa: PLC0415  # pyright: ignore[reportMissingImports]
         import packformat  # noqa: PLC0415  # pyright: ignore[reportMissingImports]

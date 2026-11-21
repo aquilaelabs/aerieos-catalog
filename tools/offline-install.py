@@ -134,6 +134,7 @@ class Product:
         # A pack kept in this catalog, or a folder made a repository here,
         # is read from disk by the controller's half.
         os.environ["BB_TOOLPACKS_FILE_URLS"] = "1"
+        os.environ["BB_SEAMS"] = "1"
         import packformat  # noqa: PLC0415  # pyright: ignore[reportMissingImports]
         import sdkmeta  # noqa: PLC0415  # pyright: ignore[reportMissingImports]
         import toolpacks  # noqa: PLC0415  # pyright: ignore[reportMissingImports]
@@ -157,6 +158,10 @@ class Product:
                 "TMPDIR": os.path.join(node, "tmp"), "LANG": "C.UTF-8", "CI": "true",
                 "BB_SCRIPTS": self.scripts, "BB_LIB": self.lib, "BB_TOOLCHAINS_JSON": os.path.join(node, "config", "toolchains.json"),
                 "SDK_ROOT": os.path.join(node, "store"), "BUILDERBOT_NETCUT_BIN": self.netcut,
+                # The release's installer reads a stand-in's place (its
+                # catalog, its cut helper, a pack on disk) only beside the
+                # marker its own tests set.
+                "BB_SEAMS": "1",
                 **({"BB_TOOLPACKS_FILE_URLS": "1"} if os.environ.get("OFFLINE_INSTALL_FILES") else {})}
 
     def sh(self, script, name, node, confined=False, timeout=120):

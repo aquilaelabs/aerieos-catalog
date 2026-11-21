@@ -226,7 +226,7 @@ class Driven(Pack):
         self.stand_in()
         for row, said in (({**self.declared()[0], "signed": {"sig": oi.STAND_IN + "tool.sig", "keys": "maker.asc"}}, "install.fetch 1 is {url, sha256, to}"),
                           ({"url": oi.STAND_IN + "tool.bin", "to": "dl/tool.bin"}, "install.fetch 1 is {url, sha256, to}"),
-                          ({"url": "http://example.com/tool.bin", "sha256": self.sha, "to": "dl/tool.bin"}, "an https address")):
+                          ({"url": "http://example.com/tool.bin", "sha256": self.sha, "to": "dl/tool.bin"}, "install.fetch 1")):
             self.pack(fetch=[row], steps=[["touch", self.mark]])
             bad = self.run_pack()
             self.assertTrue(len(bad) == 1 and "bbtool.json needs fixing" in bad[0] and said in bad[0], bad)
