@@ -203,6 +203,19 @@ owners:
   where the pack is kept here, and never moves one of Aerie's entries or
   changes a file that was here.
 
+**A pin is on a branch or a tag.** A forge answers a fetch by hash for
+commits that are on no branch of the repository asked: a pull request
+against it, a fork of it. So a commit that can be fetched under an address
+is not, by that, the repository's. The check takes a pin only where its
+commit is in the history of a branch or a tag of the repository the entry
+names: it lists the heads and the tags, and fetches them, without their
+files, as deep as it takes to answer. Any other pin is refused, with the
+entry named. A pack kept here is pinned at a commit of the branch that
+carries its entry, so a branch that moves such a pin is merged with a merge
+commit: squashed or rebased, the commit the index pins would be on no
+branch here. The pins a change moved are held to this on every pull request
+and every push to `main`, and every pin before the index is signed.
+
 A pull request is held to the copy of the check `main` has, so it cannot
 loosen the rule it is held to; `.github/CODEOWNERS` names the maintainers
 for the signature, the key, the tools, the workflows, the verified vendors

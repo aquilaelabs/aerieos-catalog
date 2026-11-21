@@ -2,7 +2,7 @@
 """The vetting check: what CI runs on every pull request and every push,
 before a maintainer reviews an entry and signs the index.
 
-    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside] [--run-installs] [--signed]
+    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside] [--every-pin] [--run-installs] [--signed]
 
 DIR is a checkout of AerieOS, whose own readers are the ones used, so an
 entry passes here exactly when an install would take it. Named more than
@@ -59,6 +59,17 @@ changed beside a third party's entry. --outside says the change comes from
 outside this repository (a pull request from a fork): it adds its entry, or
 moves its own, and never moves one of Aerie's or changes a file that was
 here.
+
+A pin is on a branch or a tag. A forge answers a fetch by hash for commits
+that are on no branch of the repository asked: a pull request's against it,
+a fork's. So a commit that is merely fetchable under an address is not that
+repository's, and a pin is taken only where its commit is in the history of
+a branch or a tag of the repository the entry names (reachable_from: the
+heads and the tags listed, fetched without their files as deep as it takes
+to answer). A pack kept in this repository is pinned at a commit of the
+branch being checked. With --changed-from or --whose-from the pins that
+moved are held to this; with neither, or with --every-pin (the signing run),
+every pin is.
 
 --run-installs installs each third party's pack that differs, the way a
 node would, with no network beyond the downloads its manifest declares
@@ -228,6 +239,129 @@ def whose(before, after, files=(), outside=False, added=()):
             bad.append(f"{', '.join(beside[:8])}{'...' if len(beside) > 8 else ''} changed beside a third party's entry: "
                        "such a change is the entry in index.json, and its own folder where the pack is kept here, alone")
     return lines, bad
+
+
+# ---- a pin is on a branch or a tag ------------------------------------------
+# An address a repository is listed and fetched at for this: https alone. A
+# test names a repository on disk, and says so.
+ADDRESS = re.compile(r"https://[A-Za-z0-9._~:/@+-]{3,300}")
+# How deep the heads and the tags are fetched, in turn, before the whole
+# history is: most pins are near a tip.
+DEPTHS = (64, 1024)
+GIT_TIMEOUT = 600
+
+
+def _git(args, cwd=None, local=False):
+    """git, asked about a third party's repository: over https alone (a
+    file on disk for a test that says so), nobody prompted, nothing fetched
+    that was not asked for. The finished process, or None where it could
+    not be run or did not end."""
+    env = dict(os.environ, GIT_TERMINAL_PROMPT="0", GIT_ALLOW_PROTOCOL="https:file" if local else "https", GIT_NO_LAZY_FETCH="1",
+               GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
+    try:
+        return subprocess.run(["git", *args], cwd=cwd, env=env, capture_output=True, text=True, timeout=GIT_TIMEOUT, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def reachable_from(url, commit, local=False):
+    """Why `commit` is not taken as a commit of the repository at `url`, or
+    "": it is in the history of one of that repository's branches or tags.
+    A commit a forge merely answers a fetch by hash for (a pull request's
+    against the repository, a fork's) is on none of them. The heads and the
+    tags are listed first, which answers for a pin at a tip with nothing
+    fetched; else they are fetched without their files, a little deeper
+    each time, into a scratch repository that is gone when this returns.
+    `local` is a test's: its repository is one on disk."""
+    import shutil
+    import tempfile
+    short = commit[:12]
+    if not (ADDRESS.fullmatch(url) or (local and url.startswith("file:///"))):
+        return f"{url} is no https address of a repository, so nothing says its pin {short} is on a branch or a tag of it"
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        return f"{commit[:40]} is no commit's full hash"
+    listed_ = _git(["ls-remote", "--heads", "--tags", "--", url], local=local)
+    if listed_ is None or listed_.returncode != 0:
+        said = ((listed_.stderr or listed_.stdout).strip().splitlines() if listed_ else []) or ["git did not answer"]
+        return f"the branches and tags of {url} could not be listed, so nothing says its pin {short} is on one: {said[-1]}"
+    tips = {ln.split("\t", 1)[0] for ln in listed_.stdout.splitlines() if "\t" in ln}
+    if commit in tips:
+        return ""
+    no = (f"its pin {short} is on no branch and no tag of {url}: a commit that address only answers a fetch by hash for (a pull request's, "
+          "a fork's) is not that repository's, and a pin is taken from a branch or a tag of the repository the entry names")
+    if not tips:
+        return no
+    work = tempfile.mkdtemp(prefix="catalog-reach.")
+    try:
+        made = _git(["init", "-q", "--bare", work])
+        if made is None or made.returncode != 0:
+            return f"no scratch repository could be made to look for {short} in, so nothing says it is on a branch or a tag of {url}"
+        specs = ["+refs/heads/*:refs/reach/heads/*", "+refs/tags/*:refs/reach/tags/*"]
+        for depth in (*DEPTHS, 0):
+            deep = [f"--depth={depth}"] if depth else (["--unshallow"] if os.path.isfile(os.path.join(work, "shallow")) else [])
+            got = _git(["-C", work, "fetch", "-q", "--no-tags", "--no-recurse-submodules", "--filter=tree:0", *deep, "--", url, *specs], local=local)
+            if got is None or got.returncode != 0:
+                said = ((got.stderr or got.stdout).strip().splitlines() if got else []) or ["git did not answer"]
+                return f"the branches and tags of {url} could not be fetched, so nothing says its pin {short} is on one: {said[-1]}"
+            # In the history of a head or a tag that was fetched, and not
+            # only among the objects: asked of the refs themselves.
+            on = _git(["-C", work, "for-each-ref", "--count=1", "--contains", commit, "refs/reach/"])
+            if on is not None and on.returncode == 0 and on.stdout.strip():
+                return ""
+            if not os.path.isfile(os.path.join(work, "shallow")):
+                break
+        return no
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def here_from(commit):
+    """Why `commit` is not taken as the pin of a pack kept in this
+    repository, or "": it is in the history of the branch being checked."""
+    r = subprocess.run(["git", "-C", ROOT, "merge-base", "--is-ancestor", commit, "HEAD"], capture_output=True, text=True, check=False)
+    if r.returncode == 0:
+        return ""
+    return (f"its pin {commit[:12]} is not in the history of the branch being checked: a pack kept in this repository is pinned at a commit "
+            "of the branch that carries its entry")
+
+
+def pins_of(p):
+    """The commits an entry pins: its own, and each older pin's."""
+    older = p.get("older") if isinstance(p.get("older"), list) else []
+    return [str(pin.get("commit") or "") for pin in (p, *older) if isinstance(pin, dict)]
+
+
+def pins_to_hold(before, after, every=False):
+    """[(name, url, commit)]: the pins of `after`'s entries that are held to
+    a branch or a tag. Every pin of every entry that is offered with
+    `every`; else the ones that moved: a commit the entry did not pin at
+    `before`, or pins under another address, or at an entry that was not
+    offered there (new, or withdrawn then). A withdrawn entry is offered to
+    nobody and is passed over."""
+    was = {p.get("name"): p for p in before.get("packs", []) if isinstance(p, dict)} if isinstance(before, dict) else {}
+    out = []
+    for p in after.get("packs", []):
+        if not isinstance(p, dict) or p.get("withdrawn") is True:
+            continue
+        a = was.get(p.get("name"))
+        had = set() if every or a is None or a.get("withdrawn") is True or a.get("url") != p.get("url") else set(pins_of(a))
+        out += [(p.get("name"), str(p.get("url") or ""), c) for c in pins_of(p) if c not in had]
+    return out
+
+
+def unreachable(pins, reach=reachable_from, here=here_from):
+    """What is wrong with each of `pins` (pins_to_hold) as a commit of the
+    repository its entry names: a sentence each, the entry named. A
+    repository is asked once for each commit, whatever number of entries
+    pin it."""
+    said, known = [], {}
+    for name, url, commit in pins:
+        key = (url.rstrip("/"), commit)
+        if key not in known:
+            known[key] = here(commit) if key[0] in SELF else reach(url, commit)
+        if known[key]:
+            said.append(f"{name}: {known[key]}")
+    return said
 
 
 def fork_of(ref):
@@ -499,6 +633,8 @@ def main(argv):
                     help="say whose each entry is that differs from the index at REF, and refuse a change that crosses owners")
     ap.add_argument("--outside", action="store_true",
                     help="with --whose-from or --changed-from: the change comes from outside this repository (a fork's pull request)")
+    ap.add_argument("--every-pin", action="store_true",
+                    help="with --whose-from or --changed-from: hold every entry's pin to a branch or a tag of its repository, not only the ones that moved")
     ap.add_argument("--run-installs", action="store_true",
                     help="with --whose-from or --changed-from: install each third party's pack that differs, with no network beyond what it declares")
     ap.add_argument("--signed", action="store_true")
@@ -587,6 +723,16 @@ def main(argv):
         for ln in crossed:
             print("FAIL  " + ln)
         problems += len(crossed)
+    # A pin is on a branch or a tag of the repository its entry names: the
+    # ones that moved, or every one where nothing says what a change started
+    # from and wherever the run asks for all of them.
+    pins = pins_to_hold(index_at(since) if since else {}, d, every=a.every_pin or not since)
+    print(f"== {len(pins)} pin(s) held to a branch or a tag of the repository named" + (f": the ones that moved since {since}" if since and not a.every_pin else ""),
+          flush=True)
+    for ln in unreachable(pins):
+        print("FAIL  " + ln)
+        problems += 1
+    if since:
         # A third party's pack that differs is installed here with no
         # network beyond the downloads it declares: one that fetches
         # anything else fails before a maintainer reads it.
@@ -603,7 +749,7 @@ def main(argv):
     if a.signed:
         signer.verify(os.path.join(ROOT, "catalog.pub"))
     if not a.builderbot:
-        print(f"whose alone, nothing fetched: {problems} problem(s)")
+        print(f"whose alone, no entry read: {problems} problem(s)")
         return 1 if problems else 0
     print(f"{len(packs)} entr{'y' if len(packs) == 1 else 'ies'} held to {len(a.builderbot)} AerieOS release(s), {problems} problem(s)")
     return 1 if problems else 0

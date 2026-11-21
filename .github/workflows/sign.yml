@@ -116,8 +116,9 @@ jobs:
           CATALOG_ROOT="${PWD}/branch" "${tools}/aerieos-checkouts.sh" "${AERIEOS_REF}" > "${RUNNER_TEMP}/releases"
           mapfile -t releases < "${RUNNER_TEMP}/releases"
           # ...and whose each entry is that the branch moved: nothing that
-          # crosses owners is signed.
-          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-check.py" "${releases[@]}" --whose-from origin/main --run-installs
+          # crosses owners is signed. Every pin, moved or not, is held to a
+          # branch or a tag of the repository its entry names.
+          CATALOG_ROOT="${PWD}/branch" python3 "${tools}/catalog-check.py" "${releases[@]}" --whose-from origin/main --every-pin --run-installs
   sign:
     needs: check
     runs-on: ubuntu-24.04

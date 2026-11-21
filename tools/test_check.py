@@ -17,6 +17,7 @@ import io
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 import types
 import unittest
@@ -309,7 +310,13 @@ class NoRelease(unittest.TestCase):
         self.ar = load("aerieos-release", self.d)
         with open(os.path.join(self.d, "aerieos-releases"), "w", encoding="utf-8") as f:
             f.write(self.ar.releases_text([]))
-        self.index = index(entry("hexkit", "aerie", url=SELF, path="packs/aerie/hexkit", format=5, framework="5.2"))
+        # The catalog is a repository, and a pack kept in it is pinned at a
+        # commit of the branch being checked.
+        git = ["git", "-c", "user.name=Somebody", "-c", "user.email=somebody@example.org", "-c", "commit.gpgsign=false", "-C", self.d]
+        for args in (["init", "-q", "-b", "main"], ["add", "-A"], ["commit", "-q", "-m", "a catalog"]):
+            subprocess.run([*git, *args], check=True, capture_output=True)
+        at = subprocess.run([*git, "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
+        self.index = index(entry("hexkit", "aerie", url=SELF, commit=at, path="packs/aerie/hexkit", format=5, framework="5.2"))
         self.write(self.index)
         self.cc = load("catalog-check", self.d)
 
