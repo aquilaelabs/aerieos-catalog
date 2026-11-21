@@ -266,13 +266,14 @@ def whose(before, after, files=(), outside=False, added=(), account="", existed=
                 continue
             path = str(b.get("path") or "").strip("/")
             d = path + "/"
-            if not FOLDER.fullmatch(path):
-                bad.append(f"{name} is kept in {path or 'no folder'}: a submission kept in this repository is in a folder of its own under packs/")
-            elif any(d.startswith(f) or f.startswith(d) for f in had) or (existed(d) if existed else False):
-                bad.append(f"{name} is kept in {path}, which was here before this change or is inside another pack's folder: a submission kept in "
-                           "this repository comes in a new folder of its own")
-            else:
+            brings = path and any(f.startswith(d) for f in files)
+            if FOLDER.fullmatch(path) and not any(d.startswith(f) or f.startswith(d) for f in had) and not (existed(d) if existed else False):
                 new.append(d)
+            elif brings and not FOLDER.fullmatch(path):
+                bad.append(f"{name} is kept in {path}: a submission kept in this repository brings its files in a folder of its own under packs/")
+            elif brings:
+                bad.append(f"{name} is kept in {path}, which was here before this change or is inside another pack's folder: a submission kept in "
+                           "this repository brings its files in a new folder of its own")
         held = sorted(f for f in files if f != "index.json" and not (f in added and any(f.startswith(d) for d in new)))
         if held:
             bad.append(f"{', '.join(held[:8])}{'...' if len(held) > 8 else ''}: a change from outside this repository adds its entry to index.json, "

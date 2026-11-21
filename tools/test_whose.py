@@ -243,14 +243,21 @@ class Whose(unittest.TestCase):
         f = ("packs/waiting/bin/extra",)
         self.assertEqual(out(now, f, existed=lambda d: False), [])
         said = out(now, f, existed=lambda d: d == "packs/waiting/")
-        self.assertTrue(any("new-tool is kept in packs/waiting, which was here before this change" in b for b in said), said)
+        self.assertTrue(any("new-tool is kept in packs/waiting, which was here before this change or is inside another pack's folder: a submission kept in this repository brings its files in a new folder of its own" in b for b in said), said)
         self.assertTrue(any("packs/waiting/bin/extra" in b for b in said), said)
         # ...nor one kept anywhere but a plain folder under packs/.
-        for path in ("", "tools", "packs", "packs/../tools", "packs/new-tool/../official/jdk", ".github/workflows"):
+        for path in ("tools", "packs", "packs/../tools", "packs/new-tool/../official/jdk", ".github/workflows"):
             now = copy.deepcopy(BASE)
             now["packs"].append(entry("new-tool", "vetted", path=path))
-            said = out(now, ((path or "x") + "/file",))
-            self.assertTrue(any("a submission kept in this repository is in a folder of its own under packs/" in b for b in said), (path, said))
+            said = out(now, (path + "/file",))
+            self.assertTrue(any(f"new-tool is kept in {path}: a submission kept in this repository brings its files in a folder of its own under packs/" in b
+                                for b in said), (path, said))
+            self.assertTrue(any(path + "/file" in b and "adds nothing to a folder that was" in b for b in said), (path, said))
+        # An entry for a folder that was here, which brings no file, is the
+        # entry alone: what it pins is the check's to read, like any entry's.
+        now = copy.deepcopy(BASE)
+        now["packs"].append(entry("new-tool", "vetted", path="packs/waiting"))
+        self.assertEqual(out(now, (), existed=lambda d: True), [])
         # A file of the new folder that was here is not new: only added files are taken.
         now = copy.deepcopy(BASE)
         now["packs"].append(entry("new-tool", "vetted", path="packs/new-tool"))
