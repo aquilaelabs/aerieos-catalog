@@ -35,7 +35,14 @@ jobs:
       - name: the check's own rules
         env:
           OFFLINE_CUT_REQUIRED: "1"
-        run: python3 -m unittest discover -s tools -p 'test_*.py'
+        run: |
+          set -euo pipefail
+          # The install proof is the installer of an AerieOS release, so its
+          # tests drive the newest one listed: the last pair of the list.
+          tools/aerieos-checkouts.sh > "${RUNNER_TEMP}/releases"
+          mapfile -t releases < "${RUNNER_TEMP}/releases"
+          newest="${releases[-1]}"
+          AERIEOS_CHECKOUT="${newest#*=}" python3 -m unittest discover -s tools -p 'test_*.py'
       # By the copy of the check main has, not the pull request's own: a
       # change cannot loosen the rule it is held to.
       - name: whose each changed entry is, by the rules main holds

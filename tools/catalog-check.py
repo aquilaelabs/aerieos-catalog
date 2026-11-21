@@ -2,7 +2,7 @@
 """The vetting check: what CI runs on every pull request and every push,
 before a maintainer reviews an entry and signs the index.
 
-    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside OWNER] [--every-pin] [--run-installs] [--signed]
+    tools/catalog-check.py --builderbot [NAME=]DIR ... [--changed-from REF] [--whose-from REF] [--outside OWNER] [--every-pin] [--run-installs | --installs-only] [--signed]
 
 DIR is a checkout of AerieOS, whose own readers are the ones used, so an
 entry passes here exactly when an install would take it. Named more than
@@ -75,13 +75,18 @@ branch being checked. With --changed-from or --whose-from the pins that
 moved are held to this; with neither, or with --every-pin (the signing run),
 every pin is.
 
---run-installs installs each third party's pack that differs, the way a
-node would, with no network beyond the downloads its manifest declares
-(install.fetch, each held to its sha256 or its publisher's signature;
-offline-install.py): a pack whose install reaches for anything it did not
-declare fails here. So work on Aerie's own packs, by a person, a session
-or tools/packs-export.py, can never carry a third party's entry along, and
-a submission can never reach past its own.
+--run-installs installs each third party's pack that differs, by the
+installer of each AerieOS named here, driven from its checkout
+(offline-install.py): the pack fetched at its pin, each download its
+manifest declares fetched and held to its sha256 or its publisher's
+signature, and its steps run with no network and no way to root. A pack
+whose install reaches for anything it did not declare fails here.
+--installs-only runs those installs and nothing else. The workflows run the
+two apart, in two jobs: the one that reads the entries runs no third
+party's code, so a pack that deceives the process installing it changes
+nothing of what is said of its entry. So work on Aerie's own packs, by a
+person, a session or tools/packs-export.py, can never carry a third party's
+entry along, and a submission can never reach past its own.
 
 aerieos-releases lists the releases the catalog serves. While it lists
 none, nothing here passes for want of one: a run that names no checkout
@@ -421,27 +426,48 @@ def fork_of(ref):
     return r.stdout.strip() if r.returncode == 0 and r.stdout.strip() else ref
 
 
-def installs_offline(p):
-    """What is wrong with a third party's pack installed with no network
-    beyond the downloads it declares (offline-install.py), [] when it goes
-    through: its files taken at the commit the entry pins, then run."""
-    import shutil
-    import tempfile
-    offline = _load(os.path.join(HERE, "offline-install.py"), "offline_install")
-    url = "file://" + ROOT if p["url"].rstrip("/") in SELF else p["url"]
-    work = tempfile.mkdtemp(prefix="catalog-install.")
+def installs_offline(p, checkout):
+    """What is wrong with a third party's pack installed by the installer of
+    the AerieOS at `checkout`, with no network beyond the downloads it
+    declares and no way to root (offline-install.py), [] when it goes
+    through. In a process of its own: it loads that release's modules, and
+    it runs a third party's steps, which this process then never shares a
+    memory with. Its verdict is its exit code; what it found it says itself."""
     try:
-        g = ["git", "-c", f"safe.directory={work}", "-C", work]
-        for cmd in (["git", "init", "-q", work], [*g, "fetch", "-q", "--depth", "1", url, p["commit"]], [*g, "checkout", "-q", "--detach", "FETCH_HEAD"]):
-            r = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=600)
-            if r.returncode != 0:
-                return [f"{p['name']}: {url} could not be fetched at {p['commit'][:12]}: {((r.stderr or r.stdout).strip().splitlines() or ['git failed'])[-1]}"]
-        got = subprocess.run([*g, "rev-parse", "HEAD"], capture_output=True, text=True, check=False).stdout.strip()
-        if got != p["commit"]:
-            return [f"{p['name']}: {url} answered {got[:12]} where the entry pins {p['commit'][:12]}"]
-        return offline.run(os.path.join(work, str(p.get("path") or "").strip("/")), "required")
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
+        r = subprocess.run([sys.executable, os.path.join(HERE, "offline-install.py"), "--aerieos", checkout, "--entry", "-", "--cut", "required"],
+                           input=json.dumps(p), text=True, env={**os.environ, "CATALOG_ROOT": ROOT}, check=False)
+    except OSError as e:
+        return [f"{p['name']}: its install could not be started: {e}"]
+    return [] if r.returncode == 0 else [f"{p['name']}: its install was not proved by this AerieOS's installer (exit {r.returncode}), as said above"]
+
+
+def named(spec):
+    """(label, directory) of a --builderbot word: NAME=DIR, or DIR alone."""
+    label, _, where = spec.rpartition("=")
+    return label or os.path.basename(os.path.normpath(where)), where
+
+
+def installs(before, d, specs, install=None):
+    """Every third party's pack that differs from the index `before`,
+    installed by the installer of each AerieOS in `specs`: (how many
+    installs were run, how many did not go through). Aerie's own packs are
+    AerieOS's rows, an app and a service are images, and a withdrawn entry
+    is offered to nobody: none of them is installed here."""
+    install = install or installs_offline
+    was = {p.get("name"): p for p in before.get("packs", []) if isinstance(p, dict)}
+    ran = problems = 0
+    for p in d["packs"]:
+        if p.get("withdrawn") or not owner_of(p) or was.get(p.get("name")) == p or p.get("kind") in ("app", "service"):
+            continue
+        for spec in specs:
+            label, where = named(spec)
+            print(f"== {p['name']} installed by AerieOS {label}'s own installer, with no network beyond what it declares", flush=True)
+            said = install(p, where)
+            for ln in said:
+                print("FAIL  " + ln)
+            ran += 1
+            problems += len(said)
+    return ran, problems
 
 
 def had_at(ref):
@@ -695,6 +721,8 @@ def main(argv):
                     help="with --whose-from or --changed-from: hold every entry's pin to a branch or a tag of its repository, not only the ones that moved")
     ap.add_argument("--run-installs", action="store_true",
                     help="with --whose-from or --changed-from: install each third party's pack that differs, with no network beyond what it declares")
+    ap.add_argument("--installs-only", action="store_true",
+                    help="with --whose-from or --changed-from: those installs and nothing else, for a job whose verdict is theirs alone")
     ap.add_argument("--signed", action="store_true")
     ap.add_argument("--one", default="", help=argparse.SUPPRESS)
     ap.add_argument("--since", default="", help=argparse.SUPPRESS)
@@ -721,6 +749,16 @@ def main(argv):
     bad = signer.check_index(d, dated=dated)
     if bad:
         sys.exit("index.json: " + "; ".join(bad))
+    if a.installs_only:
+        # The installs alone: third parties' steps run here, so this run
+        # says nothing of an entry but that, and the run that reads the
+        # entries (every other word of this file) runs none of them.
+        since = a.whose_from or a.changed_from
+        if not since or not a.builderbot:
+            ap.error("--installs-only installs the packs that differ from an index: name it with --whose-from or --changed-from, and a checkout of AerieOS")
+        ran, problems = installs(index_at(since), d, a.builderbot)
+        print(f"{ran} install(s) by {len(a.builderbot)} AerieOS release(s), {problems} problem(s)")
+        return 1 if problems else 0
     problems = 0
     if not releases:
         print("note  no AerieOS release is listed yet (aerieos-releases): tools/aerieos-release.py TAG lists the first once it is out")
@@ -739,8 +777,7 @@ def main(argv):
     import tempfile
     read_by, newest_by = {p["name"]: [] for p in packs}, set()
     for spec in a.builderbot:
-        label, _, where = spec.rpartition("=")
-        label = label or os.path.basename(os.path.normpath(where))
+        label, where = named(spec)
         with tempfile.NamedTemporaryFile("r", suffix=".json") as rep:
             print(f"== AerieOS {label}", flush=True)
             # What a change started from, for what it may not take away:
@@ -790,20 +827,12 @@ def main(argv):
     for ln in unreachable(pins):
         print("FAIL  " + ln)
         problems += 1
-    if since:
-        # A third party's pack that differs is installed here with no
-        # network beyond the downloads it declares: one that fetches
-        # anything else fails before a maintainer reads it.
-        if a.run_installs:
-            before = {p.get("name"): p for p in index_at(since).get("packs", []) if isinstance(p, dict)}
-            for p in d["packs"]:
-                if p.get("withdrawn") or not owner_of(p) or before.get(p.get("name")) == p or p.get("kind") in ("app", "service"):
-                    continue
-                print(f"== {p['name']} installed with no network beyond what it declares", flush=True)
-                said = installs_offline(p)
-                for ln in said:
-                    print("FAIL  " + ln)
-                problems += len(said)
+    # A third party's pack that differs is installed here, by each
+    # release's own installer, with no network beyond the downloads it
+    # declares: one that fetches anything else fails before a maintainer
+    # reads it.
+    if since and a.run_installs:
+        problems += installs(index_at(since), d, a.builderbot)[1]
     if a.signed:
         signer.verify(os.path.join(ROOT, "catalog.pub"))
     if not a.builderbot:

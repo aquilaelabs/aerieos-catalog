@@ -301,6 +301,42 @@ class Pins(unittest.TestCase):
             self.assertEqual((pin["held"], pin["online"], pin["name"], pin.get("older")), ("installer", OLD["online"], "hexkit", None), what)
 
 
+class Installs(unittest.TestCase):
+    """Which packs the check installs, and by whose installer (installs)."""
+
+    def test_each_third_partys_pack_that_differs_by_each_release(self):
+        mine = entry("hexkit")
+        was = index(entry("jdk", "official", url=SELF, path="packs/official/jdk"), entry("gem", "aerie", url=SELF, path="packs/aerie/gem"),
+                    mine, entry("same"), entry("gone"), entry("app-of-theirs", kind="app"))
+        now = copy.deepcopy(was)
+        for p in now["packs"]:
+            if p["name"] != "same":
+                p["commit"] = "c" * 40
+        next(p for p in now["packs"] if p["name"] == "gone")["withdrawn"] = True
+        now["packs"].append(entry("new-tool", commit="d" * 40))
+        asked = []
+
+        def install(p, where):
+            asked.append((p["name"], p["commit"][0], where))
+            return [f"{p['name']}: it did not install"] if p["name"] == "new-tool" and where == "/old" else []
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            got = cc.installs(was, now, ["v1=/old", "/somewhere/next"], install)
+        # Aerie's own, an app, a withdrawn entry and one that did not move are not installed.
+        self.assertEqual(asked, [("hexkit", "c", "/old"), ("hexkit", "c", "/somewhere/next"), ("new-tool", "d", "/old"), ("new-tool", "d", "/somewhere/next")])
+        self.assertEqual(got, (4, 1))
+        self.assertIn("== hexkit installed by AerieOS v1's own installer", out.getvalue())
+        self.assertIn("== new-tool installed by AerieOS next's own installer", out.getvalue())
+        self.assertIn("FAIL  new-tool: it did not install", out.getvalue())
+
+    def test_the_installs_alone_need_an_index_to_start_from_and_a_release(self):
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            for argv in (["--installs-only", "--whose-from", "HEAD"], ["--installs-only", "--builderbot", "/nowhere"]):
+                with self.assertRaises(SystemExit):
+                    cc.main(argv)
+        self.assertIn("--installs-only installs the packs that differ from an index", err.getvalue())
+
+
 class NoRelease(unittest.TestCase):
     """While aerieos-releases lists none, nothing passes for want of one."""
 

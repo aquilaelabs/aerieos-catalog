@@ -243,13 +243,34 @@ brings. A pack whose installer must download the rest by itself says so
 in one sentence (`install.online`), which is the one way its steps keep
 the network, and reads `installer`.
 
-The check holds a third party's pack to that before a maintainer reads it:
-`tools/offline-install.py` takes the pack at its pin, fetches what it
-declares, and runs its install steps and its verify command with the
-network cut, on the check's own runner. A step that reaches for anything
-the manifest did not declare fails there, with what to declare. A pack
-whose install needs nothing from outside declares nothing and passes the
-same way.
+The check holds a third party's pack to that before a maintainer reads it,
+with the installer of each AerieOS release the catalog serves, driven from
+a checkout of it by `tools/offline-install.py`. That release's own code
+fetches the pack at its pin and holds it to the entry's sha256, validates
+its manifest, fetches what it declares and holds each download, cuts the
+network, and runs the install steps and the verify command, on the check's
+own runner. Nothing of the mechanism is written here a second time, so a
+pack passes exactly when an install of that release would install it. A
+step that reaches for anything the manifest did not declare fails there,
+with what to declare. A pack whose install needs nothing from outside
+declares nothing and passes the same way.
+
+No step keeps a way to root. A hosted runner's account has sudo without a
+password, so the install is started with `no_new_privs` set wherever the
+runner can cut the network that way, and always for a pack whose steps
+keep the network; where only root can make the network namespace, the
+release's own `nodes/bb-netcut` makes it and sets `no_new_privs` before it
+runs the step as the account. The installs run in a job of their own, with
+no secret and no token that can write, and the job that reads the entries
+runs no third party's code: a pack that deceives the process installing it
+changes nothing of what is said of its entry.
+
+To run it before submitting, with a checkout of AerieOS at a release the
+catalog serves (`tools/aerieos-checkouts.sh` makes one of each):
+
+```sh
+tools/offline-install.py --aerieos CHECKOUT FOLDER
+```
 
 ## The framework's version
 
