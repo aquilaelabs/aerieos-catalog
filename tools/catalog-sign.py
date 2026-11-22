@@ -2,7 +2,8 @@
 """The catalog's index, signed by its maintainers (R169 step 2).
 
     tools/catalog-sign.py keygen KEYFILE         a new Ed25519 pair: the private half to KEYFILE (0600), the public half printed
-    tools/catalog-sign.py sign KEYFILE           index.json signed into index.sig
+    tools/catalog-sign.py sign KEYFILE           index.json stamped with the moment (generated) and signed into index.sig
+    tools/catalog-sign.py sign KEYFILE --as-is   signed with the date it carries, for an index stamped already
     tools/catalog-sign.py verify PUBFILE         index.sig checked against index.json with the public half
 
 The index is index.json: {"version": 1, "generated": "...", "packs": [{name, url,
@@ -11,14 +12,32 @@ commit and the sha256 of its archive at that commit, never latest. The signature
 is Ed25519 over the index's bytes; the public half ships with BuilderBot, so an
 index that was tampered with on the way is refused there. A pull request adds or
 changes an entry; a maintainer signs the index when it is merged.
+
+An entry says what its downloads are held to (held: pinned, or installer with
+the manifest's sentence as online), and no entry that is offered is open or
+says no word: whatever it fetches from somewhere else is held to something the
+entry carries. One whose pack moved to a newer pack format keeps the pins of
+the earlier ones under older, for the releases that read only those.
+
+A signature says who made an index, never that it is the newest, so an
+install refuses one made before the one it holds, by `generated`. Signing
+therefore stamps `generated` with the moment it signs, never earlier than
+the date the index carried: two different signed indexes never carry one
+date, and a later signing is always the later index.
 """
+import calendar
 import json
 import os
+import re
 import sys
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
+# The catalog this signs: the one this file is in, or CATALOG_ROOT's, which
+# is how the sign workflow signs a branch's index with the copy of this
+# file main has (as catalog-check.py is run), so that a branch cannot change
+# the program that is handed the key.
+ROOT = os.environ.get("CATALOG_ROOT") or os.path.dirname(HERE)
 INDEX, SIG = os.path.join(ROOT, "index.json"), os.path.join(ROOT, "index.sig")
 
 
@@ -60,9 +79,80 @@ def _pubs(path):
     return [ed25519.Ed25519PublicKey.from_public_bytes(bytes.fromhex(w[1])) for w in lines]
 
 
-def check_index(d):
-    """What the index must be, before it is signed: each entry whole."""
-    import re
+# What an entry's downloads are held to, in a word (AerieOS's packformat.held):
+# pinned, installer (its pinned program downloads the rest, and says so in a
+# sentence), open (anything else). The catalog offers no open entry.
+HELD = ("pinned", "installer", "open")
+# What an older pin never says: it is the entry's own, said once.
+ENTRY_OWN = ("name", "url", "path", "kind", "tier", "maker", "about", "topics", "added", "withdrawn", "agent", "older")
+OLDER_MOST = 8
+
+
+def formats_used(d):
+    """The pack formats past the first that an index's entries are written
+    in, their older pins among them, in order."""
+    used = set()
+    for p in d.get("packs") or [] if isinstance(d, dict) else []:
+        for pin in (p, *(p.get("older") or [] if isinstance(p.get("older"), list) else [])) if isinstance(p, dict) else ():
+            fmt = pin.get("format", 1) if isinstance(pin, dict) else 1
+            if isinstance(fmt, int) and not isinstance(fmt, bool) and fmt > 1:
+                used.add(fmt)
+    return sorted(used)
+
+
+def undated(d):
+    """The pack formats an index's entries use that its `formats` does not
+    date: for each, the index does not say which AerieOS first reads it."""
+    since = d.get("formats") if isinstance(d, dict) and isinstance(d.get("formats"), dict) else {}
+    return [fmt for fmt in formats_used(d) if str(fmt) not in since]
+
+
+def older_wrong(p):
+    """Why an entry's older pins are not written as the format writes them,
+    or "": up to eight, each with its format, its commit and its archive's
+    sha256, the formats going down from below the entry's own, and nothing
+    in a pin that the entry says once."""
+    older, below = p.get("older"), p.get("format", 1)
+    if older is None:
+        return ""
+    if not isinstance(older, list) or not 1 <= len(older) <= OLDER_MOST:
+        return f"older lists up to {OLDER_MOST} earlier pins of the entry, each {{format, commit, sha256}} with what the entry repeats of that manifest"
+    for pin in older:
+        fmt = pin.get("format") if isinstance(pin, dict) else None
+        if not (isinstance(fmt, int) and not isinstance(fmt, bool) and fmt >= 1 and re.fullmatch(r"[0-9a-f]{40}", str(pin.get("commit") or ""))
+                and re.fullmatch(r"[0-9a-f]{64}", str(pin.get("sha256") or ""))):
+            return "an older pin says its format (a whole number from 1), its commit (the full 40-character hash) and its archive's sha256"
+        own = sorted(k for k in pin if k in ENTRY_OWN)
+        if own:
+            return f"an older pin says {', '.join(own)}, which the entry says once"
+        if not isinstance(below, int) or fmt >= below:
+            return "older pins go from the newest pack format down, each below the one before and all below the entry's own"
+        below = fmt
+    return ""
+
+
+def held_wrong(pin, offered=True):
+    """Why what a pin says its downloads are held to is not the catalog's,
+    or "". A pin that is offered says pinned or installer; a withdrawn
+    entry is held to the words alone."""
+    word, online = pin.get("held"), pin.get("online")
+    if word is None and not offered:
+        return ""
+    if word not in HELD:
+        return f"held is what its downloads are held to, written from its manifest: {' or '.join(HELD[:2])}"
+    if word == "open" and offered:
+        return ("held is open: the catalog holds no entry whose downloads are held to nothing it carries "
+                "(pinned, or installer with the sentence that says what its pinned installer downloads)")
+    if online is not None and not (word == "installer" and isinstance(online, str) and 8 <= len(online) <= 300):
+        return "online is an installer's own sentence, up to 300 characters, beside held installer and nowhere else"
+    return ""
+
+
+def check_index(d, dated=True):
+    """What the index must be, before it is signed: each entry whole.
+    `dated` False leaves out the one thing that cannot be said before the
+    first AerieOS that reads a pack format has a version: which release
+    that is (undated answers it, for a caller that says so)."""
     bad = []
     if not isinstance(d, dict) or d.get("version") != 1 or not isinstance(d.get("packs"), list):
         return ["index.json is {version: 1, generated, packs: [...]}"]
@@ -90,23 +180,73 @@ def check_index(d):
         fmt = p.get("format", 1)
         if isinstance(fmt, bool) or not isinstance(fmt, int) or fmt < 1:
             bad.append(f"{where}.format is the pack format its manifest is written in, a whole number from 1")
+        if "framework" in p and not (isinstance(p["framework"], str) and re.fullmatch(r"[1-9]\d{0,3}\.\d{1,4}", p["framework"])):
+            bad.append(f"{where}.framework is the framework version its manifest is written for, as \"5.2\"")
+        if p.get("kind", "pack") not in ("pack", "app", "service"):
+            bad.append(f"{where}.kind is app for a Docker app, service for one of AerieOS's own services, and left out for a pack")
+        # What its downloads are held to, and the same of each older pin:
+        # nothing that is offered is open, or says no word.
+        offered = p.get("withdrawn") is not True
+        why = older_wrong(p)
+        if why:
+            bad.append(f"{where}.{why}")
+        for n, pin in enumerate([p, *([] if why else p.get("older") or [])]):
+            said = held_wrong(pin, offered)
+            if said:
+                bad.append(f"{where}{f'.older[{n - 1}]' if n else ''}.{said}")
     # The first AerieOS that reads each format past the first, for a card
     # on an older one to name.
     since = d.get("formats", {})
     if not isinstance(since, dict) or not all(re.fullmatch(r"[0-9]{1,4}", str(k)) and re.fullmatch(r"[0-9A-Za-z.+-]{1,40}", str(v))
                                               for k, v in since.items()):
         bad.append("formats maps a pack format's number to the first AerieOS that reads it, e.g. {\"2\": \"0.9.0\"}")
-    else:
-        for i, p in enumerate(d["packs"]):
-            if isinstance(p, dict) and isinstance(p.get("format"), int) and p["format"] > 1 and str(p["format"]) not in since:
-                bad.append(f"packs[{i}] is pack format {p['format']}, and formats does not say which AerieOS first reads it")
+    elif dated:
+        for fmt in undated(d):
+            bad.append(f"an entry is written in pack format {fmt}, and formats does not say which AerieOS first reads it "
+                       "(tools/aerieos-release.py TAG writes it once that release is out)")
     names = [p.get("name") for p in d["packs"] if isinstance(p, dict)]
     if len(names) != len(set(names)):
         bad.append("a name appears twice")
     return bad
 
 
-def sign(keyfile):
+STAMP = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def stamp(now=None):
+    """index.json's `generated` moved to this moment, and written: the date
+    an install orders two signed indexes by. Never moved back: a clock
+    behind the date the index carries leaves it one second after that date.
+    Only that value's characters change, so the file stays as whatever wrote
+    it laid it out. The stamp written."""
+    with open(INDEX, encoding="utf-8") as f:
+        text = f.read()
+    d = json.loads(text)
+    at = int(time.time() if now is None else now)
+    try:
+        was = calendar.timegm(time.strptime(str(d.get("generated")), STAMP))
+    except ValueError:
+        was = None
+    if was is not None and at <= was:
+        at = was + 1
+    said = time.strftime(STAMP, time.gmtime(at))
+    if isinstance(d.get("generated"), str):
+        new, n = re.subn(r'("generated"\s*:\s*)"[^"]*"', lambda m: m.group(1) + json.dumps(said), text, count=1)
+    else:
+        new, n = text, 0
+    want = {**d, "generated": said}
+    if n != 1 or json.loads(new) != want:
+        # No such value at the top to move (or the first one found was not
+        # the index's own): written whole, in the order it was read.
+        new = json.dumps(want, indent=1) + "\n"
+    with open(INDEX, "w", encoding="utf-8") as f:
+        f.write(new)
+    return said
+
+
+def sign(keyfile, as_is=False):
+    if not as_is:
+        print(f"index.json stamped {stamp()}")
     with open(INDEX, "rb") as f:
         data = f.read()
     bad = check_index(json.loads(data))
@@ -140,15 +280,12 @@ def main(argv):
         keygen(argv[1])
     elif len(argv) == 2 and argv[0] == "sign":
         sign(argv[1])
+    elif len(argv) == 3 and argv[0] == "sign" and argv[2] == "--as-is":
+        sign(argv[1], as_is=True)
     elif len(argv) == 2 and argv[0] == "verify":
         verify(argv[1])
     elif argv == ["stamp"]:
-        with open(INDEX, encoding="utf-8") as f:
-            d = json.load(f)
-        d["generated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        with open(INDEX, "w", encoding="utf-8") as f:
-            json.dump(d, f, indent=1, sort_keys=True); f.write("\n")
-        print("stamped")
+        print(f"stamped {stamp()}")
     else:
         sys.exit(__doc__)
 
