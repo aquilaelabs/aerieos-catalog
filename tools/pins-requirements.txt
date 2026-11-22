@@ -1,0 +1,11 @@
+# What the pins workflow installs before it runs AerieOS's tools/pins.py:
+# uv, the resolver a pip lock is resolved by (npm, for an npm lock, is the
+# runner's own). One exact version, held to the sha256 of its wheel for the
+# runner's platform:
+#
+#     pip install --require-hashes --no-deps -r tools/pins-requirements.txt
+#
+# A newer uv is a change to the two lines below, the digest read from
+# https://pypi.org/pypi/uv/VERSION/json.
+uv==0.13.0 \
+    --hash=sha256:52c7da0fd9056d9551124777ec77de53f0df7017daf8f98a19e947b7837416ed
