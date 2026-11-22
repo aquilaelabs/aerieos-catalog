@@ -5,14 +5,4 @@
 # take is taken away from it. A release is listed by tools/aerieos-release.py
 # TAG once it is out; one no longer served is taken off, and with it the
 # promise to its installs and the older pins only it needed.
-#
-# No release is listed yet. The catalog holds every download to something
-# its entry carries, in pack format 5, and the first AerieOS that reads that
-# is the oldest the catalog will ever serve: the releases before it are gone
-# from this list and nothing is owed to them. When that release is out:
-#
-#     tools/aerieos-release.py TAG
-#
-# lists it here and writes into index.json which AerieOS first reads each
-# pack format (formats). Until then every tool and workflow that needs a
-# release says that none is listed, and none of them passes for want of one.
+v0.9.0-dev.6054

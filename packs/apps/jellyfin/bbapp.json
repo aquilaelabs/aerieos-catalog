@@ -1,0 +1,36 @@
+{
+ "about": "A media server: films, series and music streamed to every screen, with apps for phones, televisions and browsers and no account anywhere else.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its settings and cache",
+   "default": "apps/jellyfin",
+   "example": "",
+   "help": "its own folder, which holds its library's database and its cache"
+  },
+  {
+   "var": "MEDIA",
+   "kind": "folder",
+   "label": "Its media",
+   "default": "",
+   "example": "/mnt/tank/media",
+   "help": "the films, series and music it serves; read-only to it"
+  }
+ ],
+ "format": 5,
+ "framework": "5.2",
+ "label": "Jellyfin",
+ "license": {
+  "label": "GPL-2.0 (jellyfin/jellyfin)",
+  "url": "https://github.com/jellyfin/jellyfin/blob/master/LICENSE"
+ },
+ "maker": "Jellyfin",
+ "name": "jellyfin",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 8096
+}

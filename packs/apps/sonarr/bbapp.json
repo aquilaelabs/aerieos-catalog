@@ -1,0 +1,34 @@
+{
+ "about": "Watches for the series you follow, sends each episode to a download client and files it in your library. It reaches Prowlarr and qBittorrent at this machine's address and their ports.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its settings",
+   "default": "apps/sonarr",
+   "help": "its own folder, which holds its database and settings"
+  },
+  {
+   "var": "MEDIA",
+   "kind": "folder",
+   "label": "Its series and downloads",
+   "example": "/mnt/tank/media",
+   "help": "the share's folder its series and the downloads it imports are in"
+  }
+ ],
+ "format": 5,
+ "framework": "5.2",
+ "label": "Sonarr",
+ "license": {
+  "label": "GPL-3.0 (Sonarr/Sonarr)",
+  "url": "https://github.com/Sonarr/Sonarr"
+ },
+ "maker": "the Sonarr team",
+ "name": "sonarr",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 8989
+}

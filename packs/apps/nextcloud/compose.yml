@@ -1,0 +1,30 @@
+services:
+  nextcloud:
+    image: nextcloud:31.0.5-apache@sha256:3aed4aab986d03dab41c2befde9843b09a900380f0c8f734764daa38ebde674e
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      NEXTCLOUD_ADMIN_USER: ${ADMIN_USER}
+      NEXTCLOUD_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      TZ: ${TZ}
+    ports:
+      - "${PORT}:80"
+    volumes:
+      - ${DATA}/html:/var/www/html
+      - ${FILES}:/var/www/html/data
+    depends_on:
+      - db
+  db:
+    image: mariadb:11.4@sha256:a8992b5e5404d11e03c54a31d0c1bdea3fd116d283aa6d1a627551f29045309b
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ${DATA}/db:/var/lib/mysql

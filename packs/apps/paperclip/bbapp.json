@@ -1,0 +1,61 @@
+{
+ "about": "A company of AI agents as an org chart, each with a role, a budget and approvals, on the model router's key. AerieOS's guards do not reach its agents: its container and its own budgets do.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its companies and database",
+   "default": "apps/paperclip",
+   "help": "its own folder, which holds its database, its companies and what its agents work on"
+  },
+  {
+   "var": "PUBLIC_URL",
+   "kind": "text",
+   "label": "Its address",
+   "required": true,
+   "example": "http://192.168.1.20:3100",
+   "help": "the address people open it at, which its sign-in and invite links use"
+  },
+  {
+   "var": "ROUTER_URL",
+   "kind": "router",
+   "label": "Model router",
+   "key": "ROUTER_KEY",
+   "required": true,
+   "help": "the router its agents call Claude through, with a key of the container's own; the router needs an Anthropic key"
+  },
+  {
+   "var": "AUTH_SECRET",
+   "kind": "secret",
+   "label": "Session secret",
+   "help": "signs its sign-ins; made for it when left empty"
+  },
+  {
+   "var": "AGENT_SECRET",
+   "kind": "secret",
+   "label": "Agent secret",
+   "help": "signs the tokens its agents call it with; made for it when left empty"
+  },
+  {
+   "var": "APPROVAL_SECRET",
+   "kind": "secret",
+   "label": "Approval secret",
+   "help": "signs approvals of the tools that wait for one; made for it when left empty"
+  }
+ ],
+ "format": 5,
+ "framework": "5.2",
+ "label": "Paperclip",
+ "license": {
+  "label": "MIT (paperclipai/paperclip)",
+  "url": "https://github.com/paperclipai/paperclip"
+ },
+ "maker": "Paperclip Labs",
+ "name": "paperclip",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 3100
+}

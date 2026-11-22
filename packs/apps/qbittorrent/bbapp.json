@@ -1,0 +1,36 @@
+{
+ "about": "A download client with a web page. Its first password is in its log; change it on its first open.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its settings",
+   "default": "apps/qbittorrent",
+   "example": "",
+   "help": "its own folder, which holds its settings and the torrents it is working on"
+  },
+  {
+   "var": "DOWNLOADS",
+   "kind": "folder",
+   "label": "Its downloads",
+   "default": "",
+   "example": "/mnt/tank/downloads",
+   "help": "the share's folder finished downloads go to"
+  }
+ ],
+ "format": 5,
+ "framework": "5.2",
+ "label": "qBittorrent",
+ "license": {
+  "label": "GPL-2.0-or-later (qbittorrent/qBittorrent)",
+  "url": "https://github.com/qbittorrent/qBittorrent/blob/master/COPYING"
+ },
+ "maker": "the qBittorrent project",
+ "name": "qbittorrent",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 8080
+}

@@ -1,0 +1,56 @@
+{
+ "about": "Files, calendars and contacts with its apps, on a database of its own. Its admin account is made as it first starts.",
+ "compose": "compose.yml",
+ "fields": [
+  {
+   "var": "FILES",
+   "kind": "folder",
+   "label": "Its files",
+   "default": "",
+   "example": "/mnt/tank/files",
+   "help": "the share's folder each account's files are kept in"
+  },
+  {
+   "var": "DATA",
+   "kind": "folder",
+   "label": "Its app and database",
+   "default": "apps/nextcloud",
+   "example": "",
+   "help": "its own folder, which holds Nextcloud itself, its apps and its database"
+  },
+  {
+   "var": "ADMIN_USER",
+   "kind": "text",
+   "label": "Admin account",
+   "default": "admin",
+   "required": true,
+   "help": "the account it makes for you as it first starts"
+  },
+  {
+   "var": "ADMIN_PASSWORD",
+   "kind": "secret",
+   "label": "Admin password",
+   "help": "that account's first password, made for it when left empty; Configure reads it back"
+  },
+  {
+   "var": "DB_PASSWORD",
+   "kind": "secret",
+   "label": "Database password",
+   "help": "its database's own, made for it when left empty"
+  }
+ ],
+ "format": 5,
+ "framework": "5.2",
+ "label": "Nextcloud",
+ "license": {
+  "label": "AGPL-3.0 (nextcloud/server)",
+  "url": "https://github.com/nextcloud/server/blob/master/COPYING"
+ },
+ "maker": "Nextcloud",
+ "name": "nextcloud",
+ "platforms": [
+  "linux/amd64",
+  "linux/arm64"
+ ],
+ "port": 8081
+}

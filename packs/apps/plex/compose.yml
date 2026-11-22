@@ -1,0 +1,15 @@
+services:
+  plex:
+    image: plexinc/pms-docker:1.41.6.9685-d301f511a@sha256:a13f35ef4719603e65ce867df9056bf7f99993510b64aa7f91e94e4741482870
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      PLEX_UID: ${PUID}
+      PLEX_GID: ${PGID}
+      PLEX_CLAIM: ${CLAIM}
+    ports:
+      - "${PORT}:32400"
+    volumes:
+      - ${DATA}/config:/config
+      - ${DATA}/transcode:/transcode
+      - ${MEDIA}:/data:ro

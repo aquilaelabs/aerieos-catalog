@@ -5,13 +5,17 @@ Google account's Gemini runs since June 2026. It is not one of the five
 AerieOS ships: this pack brings its program and its adapter (AerieOS's
 docs/tool-packs.md, "A coding agent of your own"). Installed from the
 Library on a node, Start offers Gemini there like any other agent. It needs
-an AerieOS whose pack format takes a hook protocol described in the manifest.
+an AerieOS that reads pack format 5.
 
-- **The program** is fetched from Google's own storage at the one release
-  the pack pins, and held to the sha512 Google's release manifest gave for
-  it. A newer release is a new pin in the catalog, vetted and signed; the
-  copy a session runs is the node's, which a session cannot write, so its
-  own background updater changes nothing that runs.
+- **The program** is a declared download (`install.fetch` in `bbtool.json`):
+  the archive of one release for each platform, from Google's own storage,
+  each held to the sha256 the manifest carries. AerieOS fetches and checks
+  it before the install step, which then only unpacks it, with no network.
+  A newer release is a moved pin in the manifest, vetted and signed in the
+  catalog: the manifest says where Google states the newest release and its
+  sha512 (`track`, `found`), which the tool that proposes a pin reads and
+  no install does. The copy a session runs is the node's, which a session
+  cannot write, so its own background updater changes nothing that runs.
 - **The briefing** is put into the conversation as a system message by its
   own hook when a conversation starts, and again on the first prompt after
   a restart changed it. Antigravity CLI has no option for one, and its
