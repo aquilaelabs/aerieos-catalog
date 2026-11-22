@@ -180,7 +180,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json"
     },
     "platform": "linux/amd64",
-    "sha256": "408f902da6fce5a45ef777c246c182f6ef263eb155cc26548b910cdbc792dfd9",
+    "sha256": "d58386322d2073e96b33f7cc32b4e9ae2db6228f58440369725967b2de48c7b5",
     "to": "dl/cli.tar.gz",
     "track": {
      "match": "/antigravity-cli/([0-9][0-9A-Za-z.+_-]*)/",
@@ -188,7 +188,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json"
     },
     "url": "https://storage.googleapis.com/antigravity-public/antigravity-cli/{version}/linux-x64/cli_linux_x64.tar.gz",
-    "version": "1.5.6-6212266538958848"
+    "version": "1.5.14-5302690847260672"
    },
    {
     "found": {
@@ -197,7 +197,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_arm64.json"
     },
     "platform": "linux/arm64",
-    "sha256": "42bfcf996e27f6e63330ff74150bbb1d69c81632586b37ff440e92eb81955520",
+    "sha256": "e5f69a3123fac66974b303d9a201f381a0fb32b3ef869d9139da85d5caf67a2a",
     "to": "dl/cli.tar.gz",
     "track": {
      "match": "/antigravity-cli/([0-9][0-9A-Za-z.+_-]*)/",
@@ -205,7 +205,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json"
     },
     "url": "https://storage.googleapis.com/antigravity-public/antigravity-cli/{version}/linux-arm/cli_linux_arm64.tar.gz",
-    "version": "1.5.6-6212266538958848"
+    "version": "1.5.14-5302690847260672"
    },
    {
     "found": {
@@ -214,7 +214,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64_musl.json"
     },
     "platform": "linux-musl/amd64",
-    "sha256": "759402e5bba35938e14710b7d4f1413afd82c5b4edc73c23287784ce47f7e7a4",
+    "sha256": "3e499f1b33cf28437d0ff90f178628dc6958e5a94c284585d13fd9b446b639f4",
     "to": "dl/cli-musl.tar.gz",
     "track": {
      "match": "/antigravity-cli/([0-9][0-9A-Za-z.+_-]*)/",
@@ -222,7 +222,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json"
     },
     "url": "https://storage.googleapis.com/antigravity-public/antigravity-cli/{version}/linux-x64-musl/cli_linux_x64_musl.tar.gz",
-    "version": "1.5.6-6212266538958848"
+    "version": "1.5.14-5302690847260672"
    },
    {
     "found": {
@@ -231,7 +231,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_arm64_musl.json"
     },
     "platform": "linux-musl/arm64",
-    "sha256": "4dae1c738d92826e7cc6184e90e501d566af50e1d02cdb573154171fccc32022",
+    "sha256": "d5c664f860e5eedc3486f575d51ecd3a4afaec3e7657b83650108aeb9b692f21",
     "to": "dl/cli-musl.tar.gz",
     "track": {
      "match": "/antigravity-cli/([0-9][0-9A-Za-z.+_-]*)/",
@@ -239,7 +239,7 @@
      "url": "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json"
     },
     "url": "https://storage.googleapis.com/antigravity-public/antigravity-cli/{version}/linux-arm-musl/cli_linux_arm64_musl.tar.gz",
-    "version": "1.5.6-6212266538958848"
+    "version": "1.5.14-5302690847260672"
    }
   ],
   "steps": [
