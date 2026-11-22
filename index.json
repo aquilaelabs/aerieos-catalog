@@ -6,14 +6,14 @@
   "5": "0.9.0-dev.6054"
  },
  "version": 1,
- "generated": "2026-11-22T00:40:13Z",
+ "generated": "2026-11-22T13:26:10Z",
  "packs": [
   {
    "name": "jdk",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/official/jdk",
-   "sha256": "90330a024a545b8448d680a39bc9a3bf1b39e5eac02cfa6edaaeb7e3d5385347",
+   "sha256": "7fa90caf0c74e53c1263343089522b491928e44f72619e4ffb15f80549bb7c89",
    "tier": "official",
    "withdrawn": false,
    "about": "Java 21, which Gradle, sdkmanager and the emulator tools need. The first thing a node needs for Android work.",
@@ -28,7 +28,7 @@
    "maker": "Eclipse Adoptium",
    "framework": "5.1",
    "held": "pinned",
-   "shipped_rev": 2,
+   "shipped_rev": 3,
    "topics": [
     "languages",
     "mobile"
@@ -404,9 +404,9 @@
   {
    "name": "audio",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/official/audio",
-   "sha256": "2af87adbdaf92d196d78539f4557762be2d387afa4a77f018a2150fd68c40a95",
+   "sha256": "d9004f062779b718f50299c52568607aa00fca36ff8bc66b41fb0a205ab441ab",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool sound say and hear run: piper turns text into speech, and whisper turns a recording back into text with its times. About 800 MB.",
@@ -418,7 +418,7 @@
    "maker": "AerieOS",
    "framework": "5.1",
    "held": "pinned",
-   "shipped_rev": 2,
+   "shipped_rev": 3,
    "topics": [
     "media",
     "ai"
@@ -428,9 +428,9 @@
   {
    "name": "pytorch",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/official/pytorch",
-   "sha256": "4d4a3fd5ad40cc2ebf4526232d2e9389ac0a70c7b0cf23a8b018cef65a6a3472",
+   "sha256": "2f1d5c2c7aa99ad7d000e25da0c260dee96ebeca956fe1728a1d46e840e602a4",
    "tier": "official",
    "withdrawn": false,
    "about": "PyTorch with CUDA, numpy and ONNX, run as python-ml, for training or running a model on the node's NVIDIA card (driver 580 or newer); without a card it runs on the CPU. About 6 GB.",
@@ -442,7 +442,7 @@
    "maker": "AerieOS",
    "framework": "5.1",
    "held": "pinned",
-   "shipped_rev": 2,
+   "shipped_rev": 3,
    "topics": [
     "ai"
    ],
@@ -474,9 +474,9 @@
   {
    "name": "diagrams",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/official/diagrams",
-   "sha256": "52494bd9b284c513610bfbc771b7049ed47aec00163377a486ec891fe065fb03",
+   "sha256": "263a5b884078b1a77a3a5c5b59eb728f53239803ff9389be9ee3fcb42829b47d",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool diagrams runs: PlantUML and Mermaid, diagrams drawn from text. Needs jdk and playwright beside it.",
@@ -488,7 +488,7 @@
    "maker": "AerieOS",
    "framework": "5.1",
    "held": "pinned",
-   "shipped_rev": 2,
+   "shipped_rev": 3,
    "topics": [
     "documents"
    ],
@@ -497,9 +497,9 @@
   {
    "name": "documents",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/official/documents",
-   "sha256": "357a1f1e72b455939be95689e9c215df15f670561d3495e656ddd02b08f66296",
+   "sha256": "11a19e7a54e1c90b46da448e48c1b4c54803f7f9900e7f7ad8935cdddb2f7235",
    "tier": "official",
    "withdrawn": false,
    "about": "What aerie tool docs runs: reads a PDF, Word document, slide deck or spreadsheet as Markdown, draws a PDF's pages as pictures, and converts with pandoc. Also lets Claude Code read PDFs. About 650 MB.",
@@ -511,7 +511,7 @@
    "maker": "AerieOS",
    "framework": "5.1",
    "held": "pinned",
-   "shipped_rev": 2,
+   "shipped_rev": 3,
    "topics": [
     "documents"
    ],
@@ -779,9 +779,9 @@
   {
    "name": "grok",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/agents/grok",
-   "sha256": "8d9e4a0b214f53486a0e5d3314479e6b267cca721928a569a50d8c6418927a8e",
+   "sha256": "1feb7a388e5f8cfe336b2ac5301b135eb90a8d259616352ee5f75f764b7b7c82",
    "tier": "official",
    "withdrawn": false,
    "about": "Grok Build, run by sessions as grok",
@@ -793,7 +793,7 @@
    "maker": "xAI",
    "framework": "5.2",
    "held": "pinned",
-   "install_rev": 2,
+   "install_rev": 3,
    "topics": [
     "ai"
    ],
@@ -827,9 +827,9 @@
    "name": "model-router",
    "kind": "service",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/services/model-router",
-   "sha256": "9317fe64a97a82a97481a5d7fcc049354f538c7e8f42a585938361be39cc41b6",
+   "sha256": "ded5204d7bbf3fc193438cedda153798be894864fade5047ac5e00e5f04b6375",
    "tier": "official",
    "withdrawn": false,
    "about": "LiteLLM on this node holding your provider keys, Ollama beside it where you turn it on, offered to the spaces you allow: each is handed its address and a key of its own at a session's start, so its spend is its own. What Start's Any model runs through.",
@@ -925,9 +925,9 @@
    "name": "gemini",
    "agent": true,
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "29e8cae546257e49f685ad14befc989a62a5f1b2",
    "path": "packs/aerie/gemini",
-   "sha256": "98b274521d137774a869fdb3eab1f32d733f8de51fd9ece780b32d32b55bca11",
+   "sha256": "3937231136dffe9a1aafa52c97cc2a0f31674fa461db2ae0f526490813d83199",
    "tier": "aerie",
    "withdrawn": false,
    "about": "Google's coding agent, Antigravity CLI (agy), as a session's agent beside the ones AerieOS ships: handed the briefing and held by the same guards through its own hooks. It signs in with a Google account, from its page or in its own terminal, or runs on a Gemini API key.",
