@@ -1,0 +1,35 @@
+#!/bin/sh
+# The catalog's part of what an AerieOS release owes once it is out (aerie
+# version follow, run in AerieOS's own space): the release listed as one the
+# catalog serves (tools/aerieos-release.py, read from the release's own tree,
+# AERIEOS_TREE), committed on this branch with main merged into it, and
+# pushed for the maintainers' signing run and the merge. --check says
+# whether it is still owed: done once main lists it.
+#   .aerie/after-release TAG [--check]
+set -eu
+tag="$1"
+check="${2:-}"
+branch="$(git branch --show-current)"
+aerie git fetch >/dev/null 2>&1 || true
+if git show origin/main:aerieos-releases 2>/dev/null | grep -qx "$tag"; then
+    echo "done: main lists $tag"
+    exit 0
+fi
+if [ "$check" = --check ]; then
+    if grep -qx "$tag" aerieos-releases; then
+        echo "owed: $branch lists $tag; then the maintainers' signing run (sign.yml from main, naming $branch) and the merge"
+    else
+        echo "owed: $tag is not listed yet: aerie version follow lists it on $branch"
+    fi
+    exit 1
+fi
+[ -n "${AERIEOS_TREE:-}" ] || { echo "no AerieOS tree at $tag was handed over (AERIEOS_TREE)"; exit 1; }
+if ! grep -qx "$tag" aerieos-releases; then
+    git merge -q --no-edit origin/main || { git merge --abort; echo "main does not merge into $branch cleanly: merge it by hand, then follow again"; exit 1; }
+    python3 -I tools/aerieos-release.py "$tag" --aerieos "$AERIEOS_TREE"
+    git add aerieos-releases index.json
+    git commit -q -m "AerieOS $tag is listed beside the releases the catalog serves"
+    aerie git push >/dev/null
+    echo "$tag is listed on $branch ($(git rev-parse --short=7 HEAD)), pushed"
+fi
+echo "then: the maintainers' signing run (sign.yml from main, naming $branch) and the merge"
