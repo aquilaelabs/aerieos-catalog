@@ -6,7 +6,7 @@
   "5": "0.9.0-dev.6054"
  },
  "version": 1,
- "generated": "2026-11-22T00:40:13Z",
+ "generated": "2026-11-23T00:06:05Z",
  "packs": [
   {
    "name": "jdk",
@@ -61,9 +61,9 @@
   {
    "name": "android-cmake",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/android-cmake",
-   "sha256": "0a54c5ffc96e54105b212ae484009d11350d0c57c669a8c5a8b9b9f88c367db1",
+   "sha256": "5d1c2b2ed00de848d9968e030dd1c398a6b032045401890d298aae3fff2d506d",
    "tier": "official",
    "withdrawn": false,
    "about": "The CMake the NDK's build system uses.",
@@ -85,9 +85,9 @@
   {
    "name": "android-emulator",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/android-emulator",
-   "sha256": "511893f98241862073ac121fbbb3055944682c1357fc18b84fa19503c1039137",
+   "sha256": "c469a5b38eca7fa6bc6c8e943bc8bdde1a76d13543af33a21288576939ac05c6",
    "tier": "official",
    "withdrawn": false,
    "about": "The Android emulator. Its system images, one per API level, are added on the Emulator tab. Google ships it for x86_64 Linux only.",
@@ -109,9 +109,9 @@
   {
    "name": "android-platform-tools",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/android-platform-tools",
-   "sha256": "7ba673acfe0c66a83befb296bd1a0695843e56322233a66efb8930ccd063abca",
+   "sha256": "1945144e00d3df1a6afcfdae6fd963e567300194687e6b02075ee7190a862449",
    "tier": "official",
    "withdrawn": false,
    "about": "adb and the other tools that talk to a phone or an emulator; the emulator and the Phone tab need it. Google ships it for x86_64 Linux only.",
@@ -133,9 +133,9 @@
   {
    "name": "android-platforms",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/android-platforms",
-   "sha256": "cd81b88c9596d5b0b228b881fb813996bd244c8b53d567f9f03831a0a095027f",
+   "sha256": "4021ef4441896134a7b9f075c20ce9a678a1c526e2adf3bad482a6df54adf85e",
    "tier": "official",
    "withdrawn": false,
    "about": "The android.jar a build compiles against (compileSdk), at the newest level Google publishes. Update adds the next level beside it, so older projects keep building. Removing this removes every level.",
@@ -157,9 +157,9 @@
   {
    "name": "android-build-tools",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/android-build-tools",
-   "sha256": "cb7892be334e2163ac6885a16b0699d34fbe37b379e74a0b81098a54a737b2e2",
+   "sha256": "803acc2f8b284fae4a75e5685118ef176ff25355ea801959e26218ca81b3acca",
    "tier": "official",
    "withdrawn": false,
    "about": "aapt2, d8, zipalign and apksigner at the newest stable version. Update adds the next beside it.",
@@ -181,9 +181,9 @@
   {
    "name": "android-ndk",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/android-ndk",
-   "sha256": "051e21fa63ed55436c6424cdd245c181e390e5886f1660ef8f3bf705590433f9",
+   "sha256": "85bc836d193ebfb5e8bd5499370e86aa472df8a908678c4aea59b561cdc60d2f",
    "tier": "official",
    "withdrawn": false,
    "about": "Native development kit, for C and C++ inside an Android app.",
@@ -206,9 +206,9 @@
   {
    "name": "flutter",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/flutter",
-   "sha256": "e02dc3db3c9238fc2def24ed9157b4398ef80770d740d6ebaa03c2fd4757a7ef",
+   "sha256": "36fee16c41c330bb9c01dac7f7ca4bc7a0bcc8480fdfa088b614a5fb4a431395",
    "tier": "official",
    "withdrawn": false,
    "about": "Flutter with its Dart SDK. Builds Android apps on Linux, and iOS too on a Mac with Xcode.",
@@ -258,9 +258,9 @@
   {
    "name": "dotnet",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "4e46cea3ab37355f5b0746c201a800ee94fb0345",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/dotnet",
-   "sha256": "72696258afde2e39747831bd35cab1bc1f2535494ed7c9055209a26d37a18ec1",
+   "sha256": "3630e76f5057b6a4af9a38e9b80ab81bed79391cbc19500c3bed0647334cd0b0",
    "tier": "official",
    "withdrawn": false,
    "about": "The .NET SDK plus the maui-android workload: Android apps from C#.",
@@ -273,7 +273,7 @@
    "framework": "5.1",
    "held": "installer",
    "online": "dotnet downloads the maui-android workload from api.nuget.org",
-   "shipped_rev": 2,
+   "shipped_rev": 3,
    "topics": [
     "languages",
     "mobile"
@@ -283,9 +283,9 @@
   {
    "name": "node",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/node",
-   "sha256": "9fc60e97cb41cdb14d12f89c33afbb8c7a831c6cf2f948a9c24fd3df709cfbd8",
+   "sha256": "52736a266942ed0b40a7a74f091a360482d47929238cdf43ff9aa2b57f54a55c",
    "tier": "official",
    "withdrawn": false,
    "about": "Node.js and npm, for a project built with npm and for anything that drives a browser with Playwright.",
@@ -299,6 +299,7 @@
    "maker": "OpenJS Foundation",
    "framework": "2.1",
    "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "languages",
     "web"
@@ -639,9 +640,9 @@
   {
    "name": "swift",
    "url": "https://github.com/aquilaelabs/aerieos-catalog",
-   "commit": "02b4652367ba4e0bc19f9021105ccc735ee06666",
+   "commit": "f0b5009e8fa17657daf45f62503e96ed3c6d26c0",
    "path": "packs/official/swift",
-   "sha256": "99472bc2e51f992ce976026c21c655355d8c381a3ddcbfc342056ed1642d8d71",
+   "sha256": "525524b6fb3b78302fd5d15e7592d1ae3d2a8a9545da3b4828983fb336d88368",
    "tier": "official",
    "withdrawn": false,
    "about": "The Swift toolchain for Linux: shared logic, server-side Swift, and compiling packages. Not an iOS SDK.",
@@ -652,6 +653,7 @@
    "maker": "Apple",
    "framework": "2.1",
    "held": "pinned",
+   "shipped_rev": 2,
    "topics": [
     "languages",
     "mobile"
