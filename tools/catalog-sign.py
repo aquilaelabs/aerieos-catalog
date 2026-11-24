@@ -9,9 +9,12 @@
 The index is index.json: {"version": 1, "generated": "...", "packs": [{name, url,
 commit, sha256, tier, withdrawn, about, platforms}]}, each pack pinned to an exact
 commit and the sha256 of its archive at that commit, never latest. The signature
-is Ed25519 over the index's bytes; the public half ships with BuilderBot, so an
-index that was tampered with on the way is refused there. A pull request adds or
-changes an entry; a maintainer signs the index when it is merged.
+is Ed25519 over the index's bytes; the public half ships with AerieOS
+(config/catalog.pub), so an index that was tampered with on the way is refused
+there. A pull request adds or changes an entry; a maintainer runs the sign
+workflow for the change's branch (its key the environment sign's
+CATALOG_SIGNING_KEY, released by a maintainer's approval), which commits the
+signed index there, and then merges it.
 
 An entry says what its downloads are held to (held: pinned, or installer with
 the manifest's sentence as online), and no entry that is offered is open or
