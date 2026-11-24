@@ -18,30 +18,30 @@
    "fetch": [
     {
      "platform": "linux/amd64",
-     "sha256": "a3dface51d9bdc71fd121e0481dd02d9b46a721f7a6b892f756480e9666eba1f",
+     "sha256": "add4d201dbf2c0bd6077a36feb55a76939de30bae48dbb06f16b2307d38ceacb",
      "to": "dl/grok",
      "track": {
       "resolver": "text",
       "url": "https://x.ai/cli/stable"
      },
      "url": "https://x.ai/cli/grok-{version}-linux-x86_64",
-     "version": "1.0.89"
+     "version": "1.0.92"
     },
     {
      "platform": "linux/arm64",
-     "sha256": "641b3e500d6420d3b07117a2c857cceeb82b33f4b53d23a95895bd76a4773f96",
+     "sha256": "8c74f1dc6cdc1befff6b9faada06bec4cf6759d04f2a60cdc28ece5ff696b44f",
      "to": "dl/grok",
      "track": {
       "resolver": "text",
       "url": "https://x.ai/cli/stable"
      },
      "url": "https://x.ai/cli/grok-{version}-linux-aarch64",
-     "version": "1.0.89"
+     "version": "1.0.92"
     }
    ],
    "fresh": "",
    "pin": null,
-   "rev": 2,
+   "rev": 3,
    "steps": [
     [
      "mkdir",

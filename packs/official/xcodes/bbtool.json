@@ -18,15 +18,15 @@
  "shipped": {
   "probe": "xcodes",
   "reports": "xcodes",
-  "rev": 2,
+  "rev": 3,
   "source": {
    "checksum": {
     "found": {
      "from": "github-asset"
     },
     "from": "pin",
-    "sha256": "3c3ce6c550f079300c578b741e20ea0405fbe1eea808b8002ef591d568cea564",
-    "version": "2.2.0"
+    "sha256": "b7e60a095dcba4235a4634e6c996dbb7bbb65e3b580c79c3ed7eb5cf02e57ce3",
+    "version": "2.2.1"
    },
    "download": {
     "bytes": 12000000,

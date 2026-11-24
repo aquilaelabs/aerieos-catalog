@@ -32,7 +32,7 @@
  "shipped": {
   "probe": "documents",
   "reports": "markitdown",
-  "rev": 2,
+  "rev": 3,
   "source": {
    "checksum": {
     "found": {
@@ -54,15 +54,15 @@
       "url": "{base}/SHA256SUMS"
      },
      "platform": "linux/amd64",
-     "sha256": "6a9e62dad033790aef722dbd370e0ce76ce17b73627ba3ae679f537049350b39",
+     "sha256": "c85811d35971d06612585a057db3b71806378df6ea8476275fb16aa5c9fe56a0",
      "to": "dl/python.tar.gz",
      "track": {
       "asset": "^cpython-3\\.12\\.\\d+\\+\\d+-x86_64-unknown-linux-gnu-install_only_stripped\\.tar\\.gz$",
       "repo": "astral-sh/python-build-standalone",
       "resolver": "github-release"
      },
-     "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261110/cpython-3.12.16%2B20261110-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
-     "version": "20261110"
+     "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261123/cpython-3.12.16%2B20261123-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+     "version": "20261123"
     },
     {
      "found": {
@@ -84,9 +84,9 @@
      "url": "https://files.pythonhosted.org/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl"
     },
     {
-     "sha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1",
-     "to": "dl/pip/certifi-2026.10.23-py3-none-any.whl",
-     "url": "https://files.pythonhosted.org/packages/32/d1/a3652fe2c19134d0d15922177821d863cbd7e842d53a21bbe7e8e3a1b5ac/certifi-2026.10.23-py3-none-any.whl"
+     "sha256": "7422df25243767b9877031a2248cb14d09ddac9beee846f4cef3d5c9191d488f",
+     "to": "dl/pip/certifi-2026.11.20-py3-none-any.whl",
+     "url": "https://files.pythonhosted.org/packages/6d/39/5eec3296860b94ac20bb8ed807725b88f6adfab3f343df592afd975f5f86/certifi-2026.11.20-py3-none-any.whl"
     },
     {
      "sha256": "c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf",
@@ -94,9 +94,9 @@
      "url": "https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
     },
     {
-     "sha256": "3d31298449090ab8d47b7b1b2a555ff73cac7ed438a08b7ac160980c7ebed649",
-     "to": "dl/pip/charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
-     "url": "https://files.pythonhosted.org/packages/7f/c5/38806a25ab5e65fc178f39affeda20858efafede2fce1ffc2556cfc9fe73/charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+     "sha256": "e5e4785d8a0adeadfbdf75f4efc357911842674651cbafd7e97f69b11ec3cbc6",
+     "to": "dl/pip/charset_normalizer-3.5.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
+     "url": "https://files.pythonhosted.org/packages/67/92/6db11254f4009dd980e17473a0ee4a4b54945df4d8346af4bef8999ab85a/charset_normalizer-3.5.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl"
     },
     {
      "sha256": "8bb5376d2006950386f8c6427613334a2acadc5f559cb80e638d00b4df957e37",
@@ -179,9 +179,9 @@
      "url": "https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl"
     },
     {
-     "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
-     "to": "dl/pip/packaging-26.3-py3-none-any.whl",
-     "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl"
+     "sha256": "81383611a09c1bc0b08b76e0fd5829d7c6824c65b27a6aee339da133f4233ea2",
+     "to": "dl/pip/packaging-26.4-py3-none-any.whl",
+     "url": "https://files.pythonhosted.org/packages/ba/7b/5504f91c9c2733f693d7759e50ede5d27119d4da7e5836c46d3b5ff81d56/packaging-26.4-py3-none-any.whl"
     },
     {
      "sha256": "028490c8ac2e03e18c9b08b7f3612e149b03570209bcf741d23833a7a5377ab2",
@@ -194,9 +194,9 @@
      "url": "https://files.pythonhosted.org/packages/20/8b/28c4eaec9d6b036a52cb44720408f26b1a143ca9bce76cc19e8f5de00ab4/pdfminer_six-20260107-py3-none-any.whl"
     },
     {
-     "sha256": "7741ea81bf165b474b153e6789d10d18e06b6ddcf3ec84289c3ef2fed6802580",
-     "to": "dl/pip/pdfplumber-0.11.10-py3-none-any.whl",
-     "url": "https://files.pythonhosted.org/packages/a2/9a/07d658e1e7fad860f1c541ab941348125dbdab773be3a0afaf32361866c7/pdfplumber-0.11.10-py3-none-any.whl"
+     "sha256": "81fd7c493ac69a0645a68da49320e4e2cace05d99824439accc7b5b3d955f3bc",
+     "to": "dl/pip/pdfplumber-0.11.11-py3-none-any.whl",
+     "url": "https://files.pythonhosted.org/packages/25/27/0b40cb094fe566445fef76ff5c458b63031baf17c246b40b116d472ce2ac/pdfplumber-0.11.11-py3-none-any.whl"
     },
     {
      "sha256": "42d63be3af4f9b951b199b0a9d23365d37ab14687e6d77b74940432c8515c4ca",
@@ -249,9 +249,9 @@
      "url": "https://files.pythonhosted.org/packages/d9/4f/00be2196329ebbff56ce564aa94efb0fbc828d00de250b1980de1a34ab49/python_pptx-1.0.2-py3-none-any.whl"
     },
     {
-     "sha256": "ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc",
-     "to": "dl/pip/pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
-     "url": "https://files.pythonhosted.org/packages/8b/9d/b3589d3877982d4f2329302ef98a8026e7f4443c765c46cfecc8858c6b4b/pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+     "sha256": "93bfb2459195406a518e2f487a9bbf01df240175f31e06f5a252ac6734c7bbf0",
+     "to": "dl/pip/pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+     "url": "https://files.pythonhosted.org/packages/94/80/1d27f7084b983b7cfd1fb35e65a38276d9eddfdcdabc0922bb26cf9521bc/pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
     },
     {
      "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
@@ -289,13 +289,13 @@
      "url": "https://files.pythonhosted.org/packages/1a/62/c8d562e7766786ba6587d09c5a8ba9f718ed3fa8af7f4553e8f91c36f302/xlrd-2.0.2-py2.py3-none-any.whl"
     },
     {
-     "sha256": "2b83c5e184d872275e87718ebc88688acc258a50fc84dcad965b3d10be6e345f",
-     "to": "dl/pip/xlsxwriter-3.3.3-py3-none-any.whl",
-     "url": "https://files.pythonhosted.org/packages/49/bd/8314de2aec89ba343957b3a0d13d7fb0910b57955cbe9c334c6c2d3e512d/xlsxwriter-3.3.3-py3-none-any.whl"
+     "sha256": "da62fecb24fdd0f003c874c86109b9e1245ae89533052745ab85a085eb2b04d7",
+     "to": "dl/pip/xlsxwriter-3.3.4-py3-none-any.whl",
+     "url": "https://files.pythonhosted.org/packages/a4/f4/42d98147a0e3e2ae905a1c51bd6fcac1e551e4223b35fbf5d9769f59ffb6/xlsxwriter-3.3.4-py3-none-any.whl"
     }
    ],
    "files": {
-    "dl/pip/requirements.txt": "beautifulsoup4==4.15.0 --hash=sha256:d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9\ncertifi==2026.10.23 --hash=sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1\ncffi==2.1.1 --hash=sha256:c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf\ncharset-normalizer==3.5.2 --hash=sha256:3d31298449090ab8d47b7b1b2a555ff73cac7ed438a08b7ac160980c7ebed649\nclick==8.5.1 --hash=sha256:8bb5376d2006950386f8c6427613334a2acadc5f559cb80e638d00b4df957e37\ncobble==0.1.4 --hash=sha256:36c91b1655e599fd428e2b95fdd5f0da1ca2e9f1abb0bc871dec21a0e78a2b44\ncryptography==50.0.2 --hash=sha256:4061c0079120205fb760c58acab6443e217307dcf05e3702cf970e0689972856\ndefusedxml==0.7.1 --hash=sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61\net-xmlfile==2.0.0 --hash=sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa\nflatbuffers==25.12.19 --hash=sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4\nidna==3.20 --hash=sha256:ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c\nlxml==6.1.3 --hash=sha256:909f4e927bb051f7740d6367285fc60cdcfdaf0258c2dba4ff5ba7eadadc250c\nmagika==1.0.3 --hash=sha256:3e9b49134e8116ee40b431664dcbed9e199413efddcce1a173c734b4e0521529\nmammoth==1.13.0 --hash=sha256:dd7629fa9d0a5e82207b3f481a9dcb8308fb43f6206258e062f11121efba9991\nmarkdownify==1.2.4 --hash=sha256:e0375484fdd2bb007e86779fe34c59673d0011b14f8299953aaf0bf092269220\nmarkitdown==0.1.9 --hash=sha256:52f59c48bea9cf887224c56247f648d68beb7aa7af5a12d414748210c83c20ea\nnetworkx==3.7 --hash=sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0\nnumpy==2.5.5 --hash=sha256:704d819265e5d1064d932968e9ee85fff2103ccc78c05b878c06943ba27b8507\nonnxruntime==1.32.0 --hash=sha256:99e1074c4b2197accd5073052a465361be17b89c093b8ffb6e6bd8f986c52df8\nopenpyxl==3.1.5 --hash=sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2\npackaging==26.3 --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c\npandas==3.1.1 --hash=sha256:028490c8ac2e03e18c9b08b7f3612e149b03570209bcf741d23833a7a5377ab2\npdfminer-six==20260107 --hash=sha256:366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9\npdfplumber==0.11.10 --hash=sha256:7741ea81bf165b474b153e6789d10d18e06b6ddcf3ec84289c3ef2fed6802580\npillow==13.0.0 --hash=sha256:42d63be3af4f9b951b199b0a9d23365d37ab14687e6d77b74940432c8515c4ca\nprotobuf==7.36.2 --hash=sha256:89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2\npsutil==7.2.2 --hash=sha256:076a2d2f923fd4821644f5ba89f059523da90dc9014e85f8e45a5774ca5bc6f9\npycparser==3.12 --hash=sha256:a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e\npymupdf==2.1 --hash=sha256:a9efa2e9e5f469d3b5749199329739cfef1ff1d1846538ced4885c544eecbcd9\npymupdf-layout==2.1 --hash=sha256:e7e00bc50ec9113d36bdbb0dd5cdafa5f4d61e22e598960fc187ee4f721f5095\npymupdf4llm==2.1 --hash=sha256:2fe8bb344444c6a8ef41fd745d2d10f6da59df6e104ef20f35d51dd26914b5fb\npypdfium2==5.15.2 --hash=sha256:dc31aea5b0fb9fefc9b537a65f4113980b2c40798445736a7e6565bc85161e37\npython-dateutil==4.0.0 --hash=sha256:a5e246f79eb80475e691bf93862cead98decd8a498cf53ba0516fcdc0f50dc1c\npython-pptx==1.0.2 --hash=sha256:160838e0b8565a8b1f67947675886e9fea18aa5e795db7ae531606d68e785cba\npyyaml==6.0.3 --hash=sha256:ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc\nrequests==2.34.2 --hash=sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0\nsoupsieve==4.1.3 --hash=sha256:7a390d1a57d1ab7bb228531e9b8a750a5ebf87db774e0ef6faeeac057d22a5bf\ntabulate==0.10.0 --hash=sha256:f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3\ntyping-extensions==4.16.0 --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8\ntzdata==2026.6 --hash=sha256:0a10eec6e13ef16b627fabed9a5f2ba61a62b1c67f327305f4e7e412a70b4aec\nurllib3==2.8.0 --hash=sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3\nxlrd==2.0.2 --hash=sha256:ea762c3d29f4cca48d82df517b6d89fbce4db3107f9d78713e48cd321d5c9aa9\nxlsxwriter==3.3.3 --hash=sha256:2b83c5e184d872275e87718ebc88688acc258a50fc84dcad965b3d10be6e345f\n"
+    "dl/pip/requirements.txt": "beautifulsoup4==4.15.0 --hash=sha256:d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9\ncertifi==2026.11.20 --hash=sha256:7422df25243767b9877031a2248cb14d09ddac9beee846f4cef3d5c9191d488f\ncffi==2.1.1 --hash=sha256:c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf\ncharset-normalizer==3.5.3 --hash=sha256:e5e4785d8a0adeadfbdf75f4efc357911842674651cbafd7e97f69b11ec3cbc6\nclick==8.5.1 --hash=sha256:8bb5376d2006950386f8c6427613334a2acadc5f559cb80e638d00b4df957e37\ncobble==0.1.4 --hash=sha256:36c91b1655e599fd428e2b95fdd5f0da1ca2e9f1abb0bc871dec21a0e78a2b44\ncryptography==50.0.2 --hash=sha256:4061c0079120205fb760c58acab6443e217307dcf05e3702cf970e0689972856\ndefusedxml==0.7.1 --hash=sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61\net-xmlfile==2.0.0 --hash=sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa\nflatbuffers==25.12.19 --hash=sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4\nidna==3.20 --hash=sha256:ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c\nlxml==6.1.3 --hash=sha256:909f4e927bb051f7740d6367285fc60cdcfdaf0258c2dba4ff5ba7eadadc250c\nmagika==1.0.3 --hash=sha256:3e9b49134e8116ee40b431664dcbed9e199413efddcce1a173c734b4e0521529\nmammoth==1.13.0 --hash=sha256:dd7629fa9d0a5e82207b3f481a9dcb8308fb43f6206258e062f11121efba9991\nmarkdownify==1.2.4 --hash=sha256:e0375484fdd2bb007e86779fe34c59673d0011b14f8299953aaf0bf092269220\nmarkitdown==0.1.9 --hash=sha256:52f59c48bea9cf887224c56247f648d68beb7aa7af5a12d414748210c83c20ea\nnetworkx==3.7 --hash=sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0\nnumpy==2.5.5 --hash=sha256:704d819265e5d1064d932968e9ee85fff2103ccc78c05b878c06943ba27b8507\nonnxruntime==1.32.0 --hash=sha256:99e1074c4b2197accd5073052a465361be17b89c093b8ffb6e6bd8f986c52df8\nopenpyxl==3.1.5 --hash=sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2\npackaging==26.4 --hash=sha256:81383611a09c1bc0b08b76e0fd5829d7c6824c65b27a6aee339da133f4233ea2\npandas==3.1.1 --hash=sha256:028490c8ac2e03e18c9b08b7f3612e149b03570209bcf741d23833a7a5377ab2\npdfminer-six==20260107 --hash=sha256:366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9\npdfplumber==0.11.11 --hash=sha256:81fd7c493ac69a0645a68da49320e4e2cace05d99824439accc7b5b3d955f3bc\npillow==13.0.0 --hash=sha256:42d63be3af4f9b951b199b0a9d23365d37ab14687e6d77b74940432c8515c4ca\nprotobuf==7.36.2 --hash=sha256:89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2\npsutil==7.2.2 --hash=sha256:076a2d2f923fd4821644f5ba89f059523da90dc9014e85f8e45a5774ca5bc6f9\npycparser==3.12 --hash=sha256:a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e\npymupdf==2.1 --hash=sha256:a9efa2e9e5f469d3b5749199329739cfef1ff1d1846538ced4885c544eecbcd9\npymupdf-layout==2.1 --hash=sha256:e7e00bc50ec9113d36bdbb0dd5cdafa5f4d61e22e598960fc187ee4f721f5095\npymupdf4llm==2.1 --hash=sha256:2fe8bb344444c6a8ef41fd745d2d10f6da59df6e104ef20f35d51dd26914b5fb\npypdfium2==5.15.2 --hash=sha256:dc31aea5b0fb9fefc9b537a65f4113980b2c40798445736a7e6565bc85161e37\npython-dateutil==4.0.0 --hash=sha256:a5e246f79eb80475e691bf93862cead98decd8a498cf53ba0516fcdc0f50dc1c\npython-pptx==1.0.2 --hash=sha256:160838e0b8565a8b1f67947675886e9fea18aa5e795db7ae531606d68e785cba\npyyaml==6.0.4 --hash=sha256:93bfb2459195406a518e2f487a9bbf01df240175f31e06f5a252ac6734c7bbf0\nrequests==2.34.2 --hash=sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0\nsoupsieve==4.1.3 --hash=sha256:7a390d1a57d1ab7bb228531e9b8a750a5ebf87db774e0ef6faeeac057d22a5bf\ntabulate==0.10.0 --hash=sha256:f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3\ntyping-extensions==4.16.0 --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8\ntzdata==2026.6 --hash=sha256:0a10eec6e13ef16b627fabed9a5f2ba61a62b1c67f327305f4e7e412a70b4aec\nurllib3==2.8.0 --hash=sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3\nxlrd==2.0.2 --hash=sha256:ea762c3d29f4cca48d82df517b6d89fbce4db3107f9d78713e48cd321d5c9aa9\nxlsxwriter==3.3.4 --hash=sha256:da62fecb24fdd0f003c874c86109b9e1245ae89533052745ab85a085eb2b04d7\n"
    },
    "fresh_only": true,
    "kind": "script",

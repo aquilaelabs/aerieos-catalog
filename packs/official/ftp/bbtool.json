@@ -27,7 +27,7 @@
  ],
  "shipped": {
   "probe": "ftp",
-  "rev": 2,
+  "rev": 3,
   "source": {
    "checksum": {
     "found": {
@@ -49,15 +49,15 @@
       "url": "{base}/SHA256SUMS"
      },
      "platform": "linux/amd64",
-     "sha256": "6a9e62dad033790aef722dbd370e0ce76ce17b73627ba3ae679f537049350b39",
+     "sha256": "c85811d35971d06612585a057db3b71806378df6ea8476275fb16aa5c9fe56a0",
      "to": "dl/python.tar.gz",
      "track": {
       "asset": "^cpython-3\\.12\\.\\d+\\+\\d+-x86_64-unknown-linux-gnu-install_only_stripped\\.tar\\.gz$",
       "repo": "astral-sh/python-build-standalone",
       "resolver": "github-release"
      },
-     "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261110/cpython-3.12.16%2B20261110-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
-     "version": "20261110"
+     "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261123/cpython-3.12.16%2B20261123-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+     "version": "20261123"
     },
     {
      "found": {

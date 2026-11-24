@@ -19,7 +19,7 @@
       "from": "github-asset"
      },
      "platform": "linux/amd64",
-     "sha256": "b91a96f2257297cfb67ed6784a2a658609a6b8c2ee2ded18af9c9abe8cc790ae",
+     "sha256": "e01975bf3a73791b0c0adfdf0d7093b8616186db61b78b33604b124806808816",
      "to": "dl/copilot.tar.gz",
      "track": {
       "repo": "github/copilot-cli",
@@ -27,14 +27,14 @@
       "trim_prefix": "v"
      },
      "url": "https://github.com/github/copilot-cli/releases/download/v{version}/copilot-linux-x64.tar.gz",
-     "version": "1.0.114"
+     "version": "1.0.115"
     },
     {
      "found": {
       "from": "github-asset"
      },
      "platform": "linux/arm64",
-     "sha256": "a204154d4522a7c3aa73a65ba598e432f6aafe37d5fa31cf853163a27d98018e",
+     "sha256": "889b423ce7e0dd41a298b95716d3d8fe80dc30f1fd9cf5419a95b6fb8d4e1bc8",
      "to": "dl/copilot.tar.gz",
      "track": {
       "repo": "github/copilot-cli",
@@ -42,12 +42,12 @@
       "trim_prefix": "v"
      },
      "url": "https://github.com/github/copilot-cli/releases/download/v{version}/copilot-linux-arm64.tar.gz",
-     "version": "1.0.114"
+     "version": "1.0.115"
     }
    ],
    "fresh": "",
    "pin": null,
-   "rev": 2,
+   "rev": 3,
    "steps": [
     [
      "mkdir",

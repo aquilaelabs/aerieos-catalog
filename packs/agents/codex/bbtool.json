@@ -28,7 +28,7 @@
       "trim_prefix": "rust-v"
      },
      "url": "https://github.com/openai/codex/releases/download/rust-v{version}/install.sh",
-     "version": "0.171.0"
+     "version": "0.172.0"
     }
    ],
    "fresh": "",
@@ -37,7 +37,7 @@
     "CODEX_RELEASE",
     "{v}"
    ],
-   "rev": 2,
+   "rev": 3,
    "steps": [
     [
      "sh",
