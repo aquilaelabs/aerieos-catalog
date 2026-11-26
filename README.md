@@ -451,7 +451,7 @@ index, and every install that holds it says so on its bell.
 
 ### What the repository's settings hold
 
-Three things no file here can say. Each is set once, in the repository's
+Four things no file here can say. Each is set once, in the repository's
 settings:
 
 - **A ruleset on `main`** (or a branch protection rule) that takes changes
@@ -467,6 +467,15 @@ settings:
 - **The environment `sign`**: limited to the branch `main`, a maintainer
   as its required reviewer, and the secret `CATALOG_SIGNING_KEY` in it and
   nowhere else.
+- **The environment `fresh`**: limited to the branch `main`, no required
+  reviewer, and the secret `CATALOG_FRESH_KEY` in it, the private line
+  `tools/catalog-sign.py keygen KEYFILE --fresh` writes. Its public line goes
+  to AerieOS's `config/catalog-fresh.pub`. The key says only which signed
+  index is current, weekly and by itself (`fresh.yml`, to the branch
+  `fresh`), so an install can tell an index a mirror keeps answering after
+  it was replaced; it can never say what an index holds. Until it is set the
+  workflow says so and stops, and an AerieOS that ships no freshness key
+  asks for none.
 - **A branch that moves a pin of a pack kept here is merged with a merge
   commit.** Squashed or rebased, the commit the index pins is on no
   branch, and the check on `main` refuses the pin.

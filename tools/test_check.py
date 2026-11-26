@@ -521,5 +521,45 @@ class Whole(unittest.TestCase):
         self.assertEqual(load("catalog-sign").check_index(copy.deepcopy(d), dated=False), [])
 
 
+
+class Fresh(unittest.TestCase):
+    """fresh.json: which signed index is current, said by a key that can say
+    nothing else, for AerieOS to hold a frozen index to."""
+
+    def test_a_signed_index_is_said_current_for_the_days_asked(self):
+        import datetime
+        import hashlib
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, True)
+        cs = load("catalog-sign", root=d)
+        with open(os.path.join(d, "index.json"), "wb") as f:
+            f.write(b'{"version": 1, "generated": "2026-11-20T00:00:00Z", "packs": []}\n')
+        key = os.path.join(d, "fresh.key")
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            cs.keygen(key, "fresh")
+        pub = out.getvalue().split()
+        self.assertEqual(pub[0], "builderbot-catalog-fresh-ed25519")
+        with self.assertRaises(SystemExit):
+            cs.fresh(key)                       # no index.sig: only a signed index is said current
+        with open(os.path.join(d, "index.sig"), "w") as f:
+            f.write("builderbot-catalog-ed25519-signature 00\n")
+        at = datetime.datetime(2026, 11, 26, 4, 17, tzinfo=datetime.timezone.utc)
+        with contextlib.redirect_stdout(io.StringIO()):
+            cs.fresh(key, 14, now=at)
+        with open(os.path.join(d, "fresh.json"), "rb") as f:
+            body = f.read()
+        said = json.loads(body)
+        with open(os.path.join(d, "index.json"), "rb") as f:
+            self.assertEqual(said["index_sha256"], hashlib.sha256(f.read()).hexdigest())
+        self.assertEqual((said["made"], said["expires"]), ("2026-11-26T04:17:00Z", "2026-12-10T04:17:00Z"))
+        with open(os.path.join(d, "fresh.sig")) as f:
+            words = f.read().split()
+        self.assertEqual(words[0], "builderbot-catalog-fresh-ed25519-signature")
+        from cryptography.hazmat.primitives.asymmetric import ed25519
+        ed25519.Ed25519PublicKey.from_public_bytes(bytes.fromhex(pub[1])).verify(bytes.fromhex(words[1]), body)
+        with self.assertRaises(SystemExit):
+            cs.fresh(os.path.join(d, "index.sig"))   # not a freshness key
+
+
 if __name__ == "__main__":
     unittest.main()

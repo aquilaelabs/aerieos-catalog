@@ -5,6 +5,8 @@
     tools/catalog-sign.py sign KEYFILE           index.json stamped with the moment (generated) and signed into index.sig
     tools/catalog-sign.py sign KEYFILE --as-is   signed with the date it carries, for an index stamped already
     tools/catalog-sign.py verify PUBFILE         index.sig checked against index.json with the public half
+    tools/catalog-sign.py keygen KEYFILE --fresh a new pair for the freshness statement (fresh.json)
+    tools/catalog-sign.py fresh KEYFILE [--days N]  fresh.json: index.json as it is, said current for N days (14), signed into fresh.sig
 
 The index is index.json: {"version": 1, "generated": "...", "packs": [{name, url,
 commit, sha256, tier, withdrawn, about, platforms}]}, each pack pinned to an exact
@@ -23,7 +25,17 @@ entry carries. One whose pack moved to a newer pack format keeps the pins of
 the earlier ones under older, for the releases that read only those.
 
 A signature says who made an index, never that it is the newest, so an
-install refuses one made before the one it holds, by `generated`. Signing
+install refuses one made before the one it holds, by `generated`. Nor does
+it say the index is still the newest: a mirror, or anybody between an
+install and the catalog, could keep answering one that was signed and has
+since been replaced, holding back a withdrawal. So the fresh workflow says,
+every week, which index is current, in fresh.json ({version, index_sha256,
+made, expires}) signed by a key of its own (fresh.sig): a key that can say
+only that the index already signed is current, never what it holds, kept in
+the environment `fresh` with no reviewer, so it adds no step for anybody.
+An install that ships its public half takes an index as current for
+fourteen days from when it was made, or until the newest statement that
+names it says, and the Doctor says one past that. Signing
 therefore stamps `generated` with the moment it signs, never earlier than
 the date the index carried: two different signed indexes never carry one
 date, and a later signing is always the later index.
@@ -42,6 +54,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # the program that is handed the key.
 ROOT = os.environ.get("CATALOG_ROOT") or os.path.dirname(HERE)
 INDEX, SIG = os.path.join(ROOT, "index.json"), os.path.join(ROOT, "index.sig")
+FRESH, FRESH_SIG = os.path.join(ROOT, "fresh.json"), os.path.join(ROOT, "fresh.sig")
+FRESH_DAYS = 14
+# Each key's words: the index's, and the freshness statement's (fresh).
+WORDS = {"": "builderbot-catalog-ed25519", "fresh": "builderbot-catalog-fresh-ed25519"}
 
 
 def _ed():
@@ -50,23 +66,23 @@ def _ed():
     return serialization, ed25519
 
 
-def keygen(path):
+def keygen(path, kind=""):
     serialization, ed25519 = _ed()
     priv = ed25519.Ed25519PrivateKey.generate()
     raw = priv.private_bytes(serialization.Encoding.Raw, serialization.PrivateFormat.Raw, serialization.NoEncryption())
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, "w") as f:
-        f.write("builderbot-catalog-ed25519-private " + raw.hex() + "\n")
+        f.write(f"{WORDS[kind]}-private " + raw.hex() + "\n")
     pub = priv.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
-    print("builderbot-catalog-ed25519 " + pub.hex())
+    print(f"{WORDS[kind]} " + pub.hex())
 
 
-def _priv(path):
+def _priv(path, kind=""):
     serialization, ed25519 = _ed()
     with open(path, encoding="utf-8") as f:
         words = f.read().split()
-    if len(words) != 2 or words[0] != "builderbot-catalog-ed25519-private":
-        sys.exit("not a catalog private key file")
+    if len(words) != 2 or words[0] != f"{WORDS[kind]}-private":
+        sys.exit(f"not a {'freshness' if kind else 'catalog'} private key file")
     return ed25519.Ed25519PrivateKey.from_private_bytes(bytes.fromhex(words[1]))
 
 
@@ -278,9 +294,38 @@ def verify(pubfile):
     sys.exit("index.sig does not match index.json under that key: refused")
 
 
+def fresh(keyfile, days=FRESH_DAYS, now=None):
+    """fresh.json for index.json as it is: its sha256, said current from now
+    for `days`, signed with the freshness key into fresh.sig. Only an index
+    that is signed already is said current."""
+    import datetime                                                     # noqa: PLC0415
+    import hashlib                                                      # noqa: PLC0415
+    with open(INDEX, "rb") as f:
+        data = f.read()
+    if not os.path.isfile(SIG):
+        sys.exit("index.json is not signed: only a signed index is said current")
+    if not 1 <= int(days) <= 60:
+        sys.exit("a freshness statement says from 1 to 60 days")
+    at = now or datetime.datetime.now(datetime.timezone.utc)
+    iso = lambda t: t.strftime("%Y-%m-%dT%H:%M:%SZ")                    # noqa: E731
+    body = (json.dumps({"version": 1, "index_sha256": hashlib.sha256(data).hexdigest(), "made": iso(at),
+                        "expires": iso(at + datetime.timedelta(days=int(days)))}, sort_keys=True, indent=1) + "\n").encode()
+    with open(FRESH, "wb") as f:
+        f.write(body)
+    with open(FRESH_SIG, "w", encoding="utf-8") as f:
+        f.write("builderbot-catalog-fresh-ed25519-signature " + _priv(keyfile, "fresh").sign(body).hex() + "\n")
+    print(f"fresh.json says index.json is current until {json.loads(body)['expires']}")
+
+
 def main(argv):
     if len(argv) == 2 and argv[0] == "keygen":
         keygen(argv[1])
+    elif len(argv) == 3 and argv[0] == "keygen" and argv[2] == "--fresh":
+        keygen(argv[1], "fresh")
+    elif len(argv) == 2 and argv[0] == "fresh":
+        fresh(argv[1])
+    elif len(argv) == 4 and argv[0] == "fresh" and argv[2] == "--days":
+        fresh(argv[1], argv[3])
     elif len(argv) == 2 and argv[0] == "sign":
         sign(argv[1])
     elif len(argv) == 3 and argv[0] == "sign" and argv[2] == "--as-is":

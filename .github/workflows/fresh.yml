@@ -1,0 +1,79 @@
+# Which signed index is current, said every week (tools/catalog-sign.py
+# fresh): fresh.json names main's index.json by its sha256 and says until
+# when it is current, fourteen days, signed by the freshness key into
+# fresh.sig. AerieOS holds an index to it, so one a mirror or anybody on the
+# way keeps answering after it was replaced is said on the Doctor once its
+# fortnight is out.
+#
+# The freshness key can say only that an index already signed by the
+# maintainers' key is current, never what an index holds, so it lives in the
+# environment `fresh` with no required reviewer and a run asks nobody. Its
+# statement goes to the branch `fresh` alone, one commit kept there, so main
+# is still written only by a merged pull request. Run from main, every
+# Monday, when main's index changes, and by hand; main's copy of the tool
+# and of catalog.pub, and the one library from main's pinned list.
+name: fresh
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  push:
+    branches: [main]
+    paths: [index.json, index.sig]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: fresh
+  cancel-in-progress: false
+jobs:
+  fresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: fresh
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1, pinned by commit
+        with:
+          ref: main
+          persist-credentials: true
+      - name: The signing library, pinned, from main's list
+        run: |
+          set -euo pipefail
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install --require-hashes --no-deps --only-binary :all: -r tools/sign-requirements.txt
+      - name: Say main's signed index is current
+        env:
+          CATALOG_FRESH_KEY: ${{ secrets.CATALOG_FRESH_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CATALOG_FRESH_KEY}" ]; then
+            echo "::notice::the environment fresh holds no secret CATALOG_FRESH_KEY yet: nothing is said, and an AerieOS that ships no freshness key asks for none"
+            exit 0
+          fi
+          python="${RUNNER_TEMP}/venv/bin/python"
+          # Only an index the maintainers signed is said current.
+          "${python}" -I tools/catalog-sign.py verify catalog.pub
+          key="${RUNNER_TEMP}/fresh.key"
+          case "${CATALOG_FRESH_KEY}" in
+            builderbot-catalog-fresh-ed25519-private*) line="${CATALOG_FRESH_KEY}" ;;
+            *) line="builderbot-catalog-fresh-ed25519-private $(printf '%s' "${CATALOG_FRESH_KEY}" | tr -d '[:space:]')" ;;
+          esac
+          ( umask 077; printf '%s\n' "${line}" > "${key}" )
+          "${python}" -I tools/catalog-sign.py fresh "${key}"
+          rm -f "${key}"
+          mkdir -p "${RUNNER_TEMP}/out"
+          mv fresh.json fresh.sig "${RUNNER_TEMP}/out/"
+      - name: Put the statement on the branch fresh, as its one commit
+        run: |
+          set -euo pipefail
+          [ -f "${RUNNER_TEMP}/out/fresh.json" ] || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan fresh-next
+          git rm -rq --cached .
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp "${RUNNER_TEMP}/out/fresh.json" "${RUNNER_TEMP}/out/fresh.sig" .
+          git add fresh.json fresh.sig
+          git commit -qm "main's index said current (the fresh workflow, run ${GITHUB_RUN_ID})"
+          git push --force origin HEAD:refs/heads/fresh
